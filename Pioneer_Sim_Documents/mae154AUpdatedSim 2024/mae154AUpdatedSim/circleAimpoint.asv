@@ -1,0 +1,240 @@
+function [cmd_heading, cmd_speed, cmd_climb, mode, interceptCount] = ...
+    uavController( ...
+    pN, pE, pAlt, psi, V, ...
+    targets_N, targets_E, targets_Alt)
+
+% ============================================================
+% UAV MULTI-TARGET GUIDANCE CONTROLLER
+% ============================================================
+%
+% This function generates COMMANDS (not forces):
+%   - Heading command        [rad]
+%   - Speed command          [m/s]
+%   - Vertical climb command [m/s]
+%
+% It supports:
+%   - Search
+%   - Proportional Navigation intercept
+%   - Terminal descent
+%   - Post-intercept climb
+%   - Multiple targets with memory
+%
+% ============================================================
+
+%% -------------------- INPUTS (WITH UNITS) --------------------
+%
+% pN, pE        : UAV position [meters] (North-East frame)
+% pAlt          : UAV altitude [meters]
+% psi           : UAV heading [rad] (0 = North, positive clockwise)
+% V             : UAV airspeed [m/s]
+%
+% targets_N     : vector of target North positions [meters]
+% targets_E     : vector of target East positions  [meters]
+% targets_Alt   : vector of target altitudes        [meters]
+
+%% -------------------- PERSISTENT MEMORY --------------------
+% Persistent variables keep memory between time steps
+% (VERY IMPORTANT for Simulink logic)
+
+persistent currentTarget intercepted mode_internal
+
+% Index of the target we are currently working on
+if isempty(currentTarget)
+    currentTarget = 1;
+end
+
+% Logical vector:
+% intercepted(i) = true → target i already captured
+if isempty(intercepted)
+    intercepted = false(length(targets_N),1);
+end
+
+% State machine mode
+if isempty(mode_internal)
+    mode_internal = 0; % start in SEARCH
+end
+
+%% -------------------- TUNABLE PARAMETERS --------------------
+% YOU WILL ADJUST THESE WHILE SIMULATING
+
+% ---------- Guidance ----------
+N_pn = 3;                  
+% Proportional Navigation constant (unitless)
+% Typical values: 2–5
+% Higher → more aggressive turning
+
+% ---------- Capture ----------
+captureRadius = 10;        
+% [meters]
+% Distance at which we declare a target "intercepted"
+
+descentTrigger = 60;       
+% [meters]
+% Distance where we switch from intercept → terminal descent
+
+% ---------- Speed Commands ----------
+V_search    = 25;          % [m/s]
+V_intercept = 20;          % [m/s]
+V_terminal  = 10;          % [m/s]
+
+% ---------- Altitude Behavior ----------
+terminalAltOffset = -15;  
+% [meters]
+% UAV aims BELOW target to avoid floating over it
+
+climbAltitude = 120;       
+% [meters]
+% Safe altitude after interception
+
+% ---------- Stability Limits ----------
+maxTurnRate = deg2rad(15); 
+% [rad/s]
+% HARD LIMIT — prevents instability / oscillation
+
+maxAccel = 3;             
+% [m/s^2]
+% (used indirectly by speed commands)
+
+maxClimb = 5;             
+% [m/s]
+% Prevents unrealistic vertical motion
+
+%% -------------------- TARGET SELECTION LOGIC --------------------
+% If current target is already intercepted → move on
+
+if currentTarget <= length(intercepted)
+    if intercepted(currentTarget)
+        next = find(~intercepted,1);
+        if isempty(next)
+            mode_internal = 0; % SEARCH
+        else
+            currentTarget = next;
+            mode_internal = 1; % INTERCEPT
+        end
+    end
+end
+
+%% -------------------- DEFAULT OUTPUTS --------------------
+% These get overwritten by modes
+
+cmd_heading = psi;     % [rad]
+cmd_speed   = V_search; % [m/s]
+cmd_climb   = 0;       % [m/s]
+
+%% ==================== STATE MACHINE ====================
+switch mode_internal
+
+    % ====================================================
+    case 0  % SEARCH MODE
+    % ====================================================
+    %
+    % UAV has no active target
+    % Flies straight (placeholder)
+    %
+
+        cmd_heading = psi;
+        cmd_speed   = V_search;
+        cmd_climb   = 0;
+
+        % If ANY target is not intercepted → start intercept
+        next = find(~intercepted,1);
+        if ~isempty(next)
+            currentTarget = next;
+            mode_internal = 1;
+        end
+
+    % ====================================================
+    case 1  % INTERCEPT MODE (PN)
+    % ====================================================
+    %
+    % Uses Proportional Navigation:
+    % Turn rate proportional to LOS rate
+    %
+
+        % Relative position (target minus UAV)
+        dN = targets_N(currentTarget) - pN; % [m]
+        dE = targets_E(currentTarget) - pE; % [m]
+        dist = sqrt(dN^2 + dE^2);           % [m]
+
+        % Line-of-sight angle
+        lambda = atan2(dE, dN);             % [rad]
+
+        % LOS angular rate (approximate)
+        lambda_dot = wrapToPi(lambda - psi); % [rad]
+
+        % PN turn command
+        turn_cmd = N_pn * lambda_dot;        % [rad/s]
+
+        % Saturate turn rate for stability
+        turn_cmd = min(max(turn_cmd, -maxTurnRate), maxTurnRate);
+
+        % Output commands
+        cmd_heading = psi + turn_cmd;        % [rad]
+        cmd_speed   = V_intercept;           % [m/s]
+        cmd_climb   = 0;                     % [m/s]
+
+        % Switch to terminal phase
+        if dist < descentTrigger
+            mode_internal = 2;
+        end
+
+    % ====================================================
+    case 2  % TERMINAL DESCENT
+    % ====================================================
+    %
+    % Slow down + descend smoothly toward target
+    %
+
+        dN = targets_N(currentTarget) - pN;
+        dE = targets_E(currentTarget) - pE;
+        dist = sqrt(dN^2 + dE^2);
+
+        % Fly directly at target
+        cmd_heading = atan2(dE, dN); % [rad]
+        cmd_speed   = V_terminal;    % [m/s]
+
+        % Vertical control
+        desiredAlt = targets_Alt(currentTarget) + terminalAltOffset;
+        cmd_climb  = desiredAlt - pAlt;
+
+        % Limit climb rate
+        cmd_climb = min(max(cmd_climb, -maxClimb), maxClimb);
+
+        % Capture condition
+        if dist < captureRadius
+            intercepted(currentTarget) = true;
+            mode_internal = 3;
+        end
+
+    % ====================================================
+    case 3  % POST-INTERCEPT CLIMB
+    % ====================================================
+    %
+    % Escape maneuver:
+    % Gain altitude aggressively after capture
+    %
+
+        cmd_heading = psi;
+        cmd_speed   = V_intercept;
+        cmd_climb   = maxClimb;
+
+        % Once safe altitude reached → next task
+        if pAlt >= climbAltitude
+            next = find(~intercepted,1);
+            if isempty(next)
+                mode_internal = 0;
+            else
+                currentTarget = next;
+                mode_internal = 1;
+            end
+        end
+end
+
+%% -------------------- OUTPUTS --------------------
+mode = mode_internal;
+interceptCount = sum(intercepted);
+
+end
+
+   
+       
