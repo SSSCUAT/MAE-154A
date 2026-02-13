@@ -109,5 +109,5 @@ W0 = [Ww, Wht, Wvt, Wf, Wlg, Wpr, Wcam, Wcomp, Wgps, Wbat, Wserv, Weng, Wpay, Wf
 x_0  = [x_wcg, x_hcg, x_vcg, x_fcg, x_lgcg, x_prcg, x_cam, x_comp, x_gps, x_bat, x_serv, x_eng, x_pay, x_fuel];
 
 x_cg_0 = sum(W0.*x_0)/sum(W0) % initial cg w/ payload and fuel
-meow
+
 
