@@ -70,3 +70,9 @@ N= hn*Cw ; % dimensionalized neutral point
 display(N) 
 % for the moment I will assume a small tail incedednce angle so it is
 % negliglbe 
+
+% Cl for downwash calcs 0.68 @ approx 80 ft/s 
+
+%downwash= (2*0.69)/(pi*Arw); %TS BS 
+%display(downwash) % TS BS 
+% I am going to continue assuming a downwash of 0.25 from cessna data 
