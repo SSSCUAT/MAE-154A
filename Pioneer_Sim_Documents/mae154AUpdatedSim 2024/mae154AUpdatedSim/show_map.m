@@ -10,6 +10,7 @@ whale_E = in(6);
 whale_N = in(7);
 
 
+
 figure(1)
 %subplot(211)
 
