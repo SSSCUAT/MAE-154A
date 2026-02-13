@@ -1,22 +1,22 @@
 clear, clc
 
-Wguess = 50;
+Wguess = 25;
 W = Wguess;
 for i = 1:10
     Wto(i) = W;
 
     %s = 7.12;
-    S = 3.7; %W/(.5*.00238*60^2 * 1.2 );
-    A = 8; %8.68;
-    Sh = 0.46;
-    Sv = .37;
-    bh = 1.36;
-    bv = 0.74;
+    S = 4.3; %W/(.5*.00238*60^2 * 1.2 );
+    A = 7.4; %8.68;
+    Sh = 0.53;
+    Sv = .33;
+    bh = 1.5;
+    bv = 0.7;
     
     hac = 0.25;
-    c = 0.68;
-    ch = 0.34;
-    cv = .49;
+    c = 0.8;
+    ch = 0.37;
+    cv = .5;
     hach = 0.25;
     hacv = 0.25;
     
@@ -25,7 +25,7 @@ for i = 1:10
     
     N=6.6; %Ultimate Load Factor (1.5 times limit load factor)(GIVEN)
     Delta=0*pi/180;%Deg %Wing 1/4 chord sweep angle
-    tr=1; %Taper Ratio
+    tr=0.4; %Taper Ratio
     tc=0.12; %Maximum Thickness Ratio (GIVEN)
     Ve=80;%kts %Equivalent Vmax at SL
 
@@ -34,7 +34,7 @@ for i = 1:10
 %% Fuselage Weight
 
     lf= 4; %ft %Fuselage Length
-    WF=.80; %ft %Fuselage Width
+    WF=.83; %ft %Fuselage Width
     D=1/24; %ft %Fuselage Max Depth
 
     Wf=200*((W*N/10^5)^0.286*(lf/10)^0.857*((WF+D)/10)*(Ve/100)^0.338)^1.1
@@ -66,14 +66,14 @@ for i = 1:10
 
 %% Total Propulsion Unit (minus Fuel system) Weight
 
-    Weng=3.3; %(lbs) %Bare Engine Weight
+    Weng=3; %(lbs) %Bare Engine Weight
     Neng=1; %# Engines
 
     Wp=2.575*(Weng)^0.922*Neng %this equation likely over-estimates propulsion unit weight for a small UAV
 
 %% Fuel Weight
 
-    Wfu = 5; %(lbs)
+    Wfu = 1.5; %(lbs)
 
 %% Fuel System Weight
 
@@ -89,9 +89,9 @@ for i = 1:10
 
     Wsc=1.066*W^0.626;
 %% Avionics Weight - use weights of specific sensors you choose
-    Wau=1
+    Wau=2
 %% Payload Weight
-    Wpl=20;
+    Wpl=2;
 %% TOTAL WEIGHT
     Wto(i)=Wstruct+Wp+Wfs+Wsc+Wpl+Wfu
     W = Wto(i)
