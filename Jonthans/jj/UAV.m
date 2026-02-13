@@ -24,19 +24,28 @@ rho= 0.002378;  %slugs/ft³
 Cl= W./(0.5*rho*S*V.^2) ; 
 disp(Cl)
 %% 
+clear
+clc
+%all units should be in ft 
+Arw=7.4 ; 
+%bw = 4.5; 
+bw =5.617 ; 
+%Sw= (bw.^2)/Arw; 
 Sw = 4.264931025 ; 
-bw = 5.617872336 ; 
 Sth = 0.5331163781 ; %surface area of horizontal tail 
 bth = 1.460296378 ; 
 
 
 %size of wings and horizontal tail 
-lambdaw= 0.4 ; % taper ratio of wing 
+lambdaw= 0.35 ; % taper ratio of wing 
 lambdat= 0.5 ; % taper ratio of tail (Horizontal) 
 %Sw= bw/2 *( Cr+ Ctip) %Cr=chord at root, bw=span %Ctip=LambaCr 
-Crw = (2*Sw)/bw*(1+lambdaw) ; 
-
-
+Crw = (2*Sw)/(bw*(1+lambdaw)) ; % Cr at wing 
+Ctw= lambdaw* Crw ; % chord length at tip 
+Cw = (2/3) * Crw *((1 + lambdaw + lambdaw.^2)/(1+lambdaw)) ; %effective chord length
+display(Crw)
+display(Ctw)
+display(Cw) 
 
 
 
