@@ -69,10 +69,19 @@ display(hn) % non dimensionalized
 N= hn*Cw ; % dimensionalized neutral point 
 display(N) 
 % for the moment I will assume a small tail incedednce angle so it is
-% negliglbe 
+% negliglbe or tail incidence ~-1degree if necessary for now 
 
 % Cl for downwash calcs 0.68 @ approx 80 ft/s 
 
 %downwash= (2*0.69)/(pi*Arw); %TS BS 
 %display(downwash) % TS BS 
 % I am going to continue assuming a downwash of 0.25 from cessna data 
+   % Cmacw = -0.05 from data accroding to virnigna tech libraries 
+   % Cmcg,w can be calcualted function of (alpha) 
+   % for Cmcg,t we need lt lt= distance from cg to tail ac 
+   % Cmcg,t= -( VH* at*(1-downwash) )alpha + at*VH* it (function of alpha) 
+        % VH= (lt/c) * (St/Sw); tail volume ratio 
+        % Cmcg = Cmcg,w + Cmcg,t ; 
+        % Clalpha= lift curve slope of wing might have to add tails as well
+        % ask tohey 
+        % therefore CMalpha can be found 
