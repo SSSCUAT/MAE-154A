@@ -314,5 +314,144 @@ Cmdeltae = -at*VH*tau;        % usually negative
 %deltae = -((Cm0*CLalpha) + (Cmalpha*CL)) / ((CLalpha*Cmdeltae) - (Cmalpha*CLdeltae));
 % fprintf("\nTrim elevator deltae = %.3f rad (%.2f deg)\n", deltae, rad2deg(deltae));
 
+%% 
+clear; clc;
 
-display(CLalpha)
+% ==============================================================
+% 1) FLIGHT CONDITION / ATMOSPHERE
+
+Sref = 4.2649;          % Wing reference area [ft^2] (used to nondimensionalize drag)
+V    = 80;              % Flight speed [ft/s]
+h    = 0;               % Altitude [ft] (currently unused — sea level assumed)
+
+rho = 0.0023769;        % Air density at sea level [slug/ft^3]
+mu  = 3.737e-7;         % Dynamic viscosity at sea level [slug/(ft*s)]
+a   = 1116.45;          % Speed of sound at sea level [ft/s]
+
+M = V/a;                % Mach number [-] (used in Raymer compressibility corrections)
+
+% ==============================================================
+% 2) WING PARASITE DRAG CONTRIBUTION
+
+Swet_w = 2*Sref;        % Wing wetted area [ft^2] (~2 × planform area)
+c_w    = 0.80;          % Wing characteristic length for Reynolds number (MAC) [ft]
+tc_w   = 0.12;          % Wing thickness-to-chord ratio (t/c) [-]
+xcm_w  = 0.30;          % Location of max thickness (x/c)_m [-]
+Lam_w  = 0*pi/180;      % Sweep angle at max thickness location Λ_m [rad]
+
+Re_w = rho*V*c_w/mu;    % Reynolds number based on wing MAC [-]
+
+% Raymer Eq. 12.27 — skin friction coefficient
+Cf_w = 0.455 / ( (log10(Re_w))^2.58 * (1 + 0.144*M^2)^0.65 );
+
+% Raymer Eq. 12.30 — form factor for wings/tails 
+K_w = ( 1 + (0.6/xcm_w)*tc_w + 100*tc_w^4 ) ...
+      * ( 1.34*M^0.18 * (cos(Lam_w))^0.28 );
+
+Q_w = 1.0;              % Interference factor (wing-fuselage ~1)
+
+CD0_w = K_w * Q_w * Cf_w * (Swet_w/Sref);   % Wing parasite drag coefficient
+
+% ==============================================================
+% 3) HORIZONTAL TAIL PARASITE DRAG CONTRIBUTION
+
+Swet_t = 2*0.533;       % Horizontal tail wetted area [ft^2] (~2 × St)
+c_t    = 0.35;          % Horizontal tail characteristic chord [ft]
+tc_t   = 0.12;          % Horizontal tail thickness ratio (t/c) [-]
+xcm_t  = 0.30;          % Horizontal tail max thickness location [-]
+Lam_t  = 0*pi/180;      % Horizontal tail sweep Λ_m [rad]
+
+Re_t = rho*V*c_t/mu;    % Reynolds number for horizontal tail [-]
+
+Cf_t = 0.455 / ( (log10(Re_t))^2.58 * (1 + 0.144*M^2)^0.65 );
+
+K_t = ( 1 + (0.6/xcm_t)*tc_t + 100*tc_t^4 ) ...
+      * ( 1.34*M^0.18 * (cos(Lam_t))^0.28 );
+
+Q_t = 1.05;             % Slight interference factor for tail
+
+CD0_t = K_t * Q_t * Cf_t * (Swet_t/Sref);   % Horizontal tail CD0 contribution
+
+% ==============================================================
+% % 4) VERTICAL TAIL PARASITE DRAG CONTRIBUTION
+% 
+% Sv     = 0.30;          % Vertical tail planform area [ft^2] (placeholder)
+% Swet_v = 2*Sv;          % Vertical tail wetted area [ft^2]
+% c_v    = 0.35;          % Vertical tail characteristic chord [ft]
+% tc_v   = 0.12;          % Vertical tail thickness ratio (t/c) [-]
+% xcm_v  = 0.30;          % Vertical tail max thickness location [-]
+% Lam_v  = 0*pi/180;      % Vertical tail sweep Λ_m [rad]
+% 
+% Re_v = rho*V*c_v/mu;    % Reynolds number for vertical tail [-]
+% 
+% Cf_v = 0.455 / ( (log10(Re_v))^2.58 * (1 + 0.144*M^2)^0.65 );
+% 
+% K_v = ( 1 + (0.6/xcm_v)*tc_v + 100*tc_v^4 ) ...
+%       * ( 1.34*M^0.18 * (cos(Lam_v))^0.28 );
+% 
+% Q_v = 1.05;             % Vertical tail interference factor
+% 
+% CD0_v = K_v * Q_v * Cf_v * (Swet_v/Sref);   % Vertical tail CD0 contribution
+
+% ==============================================================
+% 5) FUSELAGE PARASITE DRAG CONTRIBUTION
+
+Swet_f = 6.0;           % Fuselage wetted area [ft^2] (EDIT WITH REAL VALUE)
+L      = 4.0;           % Fuselage length [ft]
+d      = 0.4;           % Fuselage maximum diameter [ft]
+
+Re_f = rho*V*L/mu;      % Reynolds number based on fuselage length [-]
+
+Cf_f = 0.455 / ( (log10(Re_f))^2.58 * (1 + 0.144*M^2)^0.65 );
+
+f = L/d;                % Fineness ratio (length/diameter)
+
+% Raymer Eq. 12.31 — fuselage form factor
+K_f = 0.9 + 5/f^1.5 + f/400;
+
+Q_f = 1.0;              % Fuselage interference factor
+
+CD0_f = K_f * Q_f * Cf_f * (Swet_f/Sref);   % Fuselage CD0 contribution
+
+% ==============================================================
+% 6) MISCELLANEOUS + LEAKAGE DRAG
+
+CD_misc = 0.002;        % Miscellaneous drag (gaps, antennas, etc.)
+CD_LP   = 0.002;        % Leakage & protuberance drag
+
+% ==============================================================
+% 7) TOTAL PARASITE DRAG COEFFICIENT
+
+CD0_total = CD0_w + CD0_t + CD0_f + CD_misc + CD_LP;
+
+fprintf('\n================ PARASITE DRAG BREAKDOWN ================\n');
+fprintf('Mach number M = %.4f\n', M);
+fprintf('CD0_wing  = %.5f\n', CD0_w);
+fprintf('CD0_htail = %.5f\n', CD0_t);
+%fprintf('CD0_vtail = %.5f\n', CD0_v);
+fprintf('CD0_fuse  = %.5f\n', CD0_f);
+fprintf('CD_misc+LP= %.5f\n', CD_misc + CD_LP);
+fprintf('----------------------------------------------------------\n');
+fprintf('TOTAL CD0 = %.5f\n', CD0_total);
+
+% ==============================================================
+% 8) ADD INDUCED DRAG 
+
+W  = 55;                % Aircraft weight [lb]
+AR = 7.4;               % Wing aspect ratio [-]
+e  = 0.85;              % Oswald efficiency factor [-]
+
+q  = 0.5*rho*V^2;       % Dynamic pressure [lb/ft^2]
+CL = W/(q*Sref);        % Lift coefficient required for level flight [-]
+
+CDi = CL^2/(pi*e*AR);   % Induced drag coefficient
+
+CD_total = CD0_total + CDi;    % Total drag coefficient
+D = q*Sref*CD_total;           % Total drag force [lb]
+
+fprintf('\n================ TOTAL DRAG AT THIS SPEED ================\n');
+fprintf('Dynamic pressure q = %.2f lb/ft^2\n', q);
+fprintf('Lift coefficient CL = %.4f\n', CL);
+fprintf('Induced drag CDi = %.5f\n', CDi);
+fprintf('Total drag coefficient CD = %.5f\n', CD_total);
+fprintf('Total drag force D = %.2f lb\n', D);
