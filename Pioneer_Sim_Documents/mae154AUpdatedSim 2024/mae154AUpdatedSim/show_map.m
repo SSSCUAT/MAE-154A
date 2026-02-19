@@ -22,7 +22,7 @@ plot(tar_E,tar_N,'.r','markersize',16);
 plot(whale_E,whale_N,'.g','markersize',20);
 xlabel('pE')
 ylabel('pN')
-ylim([-15000 15000])
+ylim([-15000 15000]) %used to be [-15000 15000]
 xlim([-15000 15000])
 axis equal
 grid on
