@@ -57,13 +57,13 @@ Lh= 4*Cw ; %distance from wing aerodynamic center (about quarter chord)
 xacw = hacw*Cw;  % quater chord of wing in ft 
 xact= xacw+ Lh ; % distance of ac of tail wrt to LE of wing 
 hact= xact/Cw ; % distance from LE of wing to AC of Tail 
-downwash=0.25; % down wash 
+epsilon=0.25; % down wash 
 display(hact) 
 display(Lh)
 
 
 % Neautral point WRT to LE of wing 
-hn= (hacw + hact*((Sth/Sw)*(at/aw))*(1-downwash))/((1)+((Sth/Sw)*(at/aw)*(1-downwash))) ; 
+hn= (hacw + hact*((Sth/Sw)*(at/aw))*(1-epsilon))/((1)+((Sth/Sw)*(at/aw)*(1-epsilon))) ; 
 display(hn) % non dimensionalized 
 
 N= hn*Cw ; % dimensionalized neutral point 
@@ -71,7 +71,7 @@ display(N)
 % for the moment I will assume a small tail incedednce angle so it is
 % negliglbe or tail incidence (it) ~-1degree if necessary for now 
 it= -1 * pi/180 ; % incidence angle equals -1degree but I calculated it in rads
-%hcg=? ; %distance from leading edge of wing to cg normalized by dividing by wing span (Cw) 
+hcg=? ; %distance from leading edge of wing to cg normalized by dividing by wing span (Cw) 
 
 % I am going to continue assuming a downwash of 0.25 from cessna data 
 Cmacw = -0.05;  %from data accroding to virnigna tech libraries 
@@ -80,15 +80,15 @@ Cmcgw= Cmacw + aw*alpha(hcg-hacw); %can be calcualted function of (alpha)
 Cmcgt= -( VH* at*(1-downwash) )*alpha + at*VH*it; % (function of alpha) 
 VH= (lt/c) * (St/Sw); %tail volume ratio 
 Cmcg = Cmcgw + Cmcgt ; 
-Clalpha = aw + at*(Sth/ Sw)* (1-downwash) ; 
+Clalpha = aw + at*(Sth/ Sw)* (1-epsilon) ; 
 Cmalpha= -CLalpha (hn-hcg) ; 
 % tau= elevator effectivness for now I will guess an effectivness of 0.5 
 tau= 0.5 ; 
 % deltae= elevator deflection 
 Cm0= Cmacw + VH*at*it ; 
-Cl0= -at * (Sth/SW) * it ; 
 Cldeltae= at* (Sth/Sw) * tau ;   %( not sure if positive or negative ) pretty sure its positive 
 Cmdeltae= - at*VH * tau ; %( not sure if positive or negative ) pretty sure its negative 
+Cl=0.67 ; 
 deltae= - ((Cm0*Clalpha) + (Cmalpha*Cl) )./ ((Clalpha*Cmdeltae - Cmalpha * Cldeltae)) ; 
 %deltae is a function of Cl 
 
