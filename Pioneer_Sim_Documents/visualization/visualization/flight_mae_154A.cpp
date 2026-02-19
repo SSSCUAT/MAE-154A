@@ -20,6 +20,13 @@ using std::ifstream;
 #include <GLUT/glut.h>
 #else
 #include <GL/glut.h>
+#include <windows.h>
+
+void idle() {
+    Sleep(16);              // ~60 FPS (increase to 33 for slower)
+    glutPostRedisplay();
+}
+
 #endif
  
 #include "ac3d.h"
@@ -159,6 +166,7 @@ int main(int argc, char** argv) {
 	
 	/* define functions to be called during the sim loop                            */
 	glutDisplayFunc(display_and_dynamics);   /* main simulation loop                */
+	glutIdleFunc(idle);
 	glutReshapeFunc(reshape);                /* called if the window is resized     */
 	glutMouseFunc(mousebutton);              /* called if a mouse button is pressed */
 	glutKeyboardFunc(keyboard);              /* called if a key is pressed          */
@@ -215,25 +223,18 @@ void initial_states(void) {
 
 
 void display_and_dynamics(void) {
-	//ifstream indata; // indata is like cin
-	double num; // variable for input value
-	double num1; // variable for input value
-	double num2; // variable for input value
-	
-	// render the graphics 
-	draw_view();
 
-    //going every 4th line to speed it up
-	read_state();
+    draw_view();
+
+    // physics updates
     read_state();
     read_state();
     read_state();
-	
-		glutSwapBuffers();
-	
-	// refresh the display and continue the sim loop
-	glutPostRedisplay();
+    read_state();
+
+    glutSwapBuffers();
 }
+
 
 
 /*-----------------------------*/
@@ -1421,7 +1422,7 @@ void read_state(void) {
 //		indata.open("animation_airspeed_alt_bank_turn_coord.txt"); // opens the file
 //		indata.open("animation_waypoint.txt"); // opens the file
 //		indata.open("animation_waypoint_50.txt"); // opens the file
-        indata.open("simRecording_20230225_1436.txt"); // opens the file
+        indata.open(".txt"); // opens the file
 
         
 		if(!indata) { // file couldn't be opened
@@ -1445,15 +1446,19 @@ void read_state(void) {
 	TARGET_N = num8 + 240000;
     TARGET_D = -num16;
 
-	control[AILERON] = num9*180/PI;
-	control[RUDDER] = num10*180/PI;
-	control[ELEVATOR_2] = num11*180/PI;
-	control[THROTTLE_L] = num12;
-	control[THROTTLE_R] = num12;
-	
-	airspeed_read = num13;
-	alpha_read = num14;
-	beta_read = num15;
+	control[AILERON]    = num10 * 180/PI;
+	control[RUDDER]     = num11 * 180/PI;
+	control[ELEVATOR_2] = num12 * 180/PI;
+
+	// Throttle is NOT in column 12 anymore.
+	// Based on your data it is column 13.
+	control[THROTTLE_L] = num13;
+	control[THROTTLE_R] = num13;
+
+airspeed_read = num14;
+alpha_read    = num15;
+beta_read     = num16;
+
 	 
 	
 }
