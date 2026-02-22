@@ -1,6 +1,6 @@
 clear, clc
 
-Wguess = 25;
+Wguess = 22;
 W = Wguess;
 for i = 1:10
     Wto(i) = W;
@@ -8,7 +8,7 @@ for i = 1:10
     %s = 7.12;
     S = 4.3; %W/(.5*.00238*60^2 * 1.2 );
     A = 7.4; %8.68;
-    Sh = 0.2 *S;
+    Sh = 0.53;
     Sv = .33;
     bh = 1.5;
     bv = 0.7;
@@ -33,7 +33,7 @@ for i = 1:10
 
 %% Fuselage Weight
 
-    lf= 5; %ft %Fuselage Length
+    lf= 4; %ft %Fuselage Length
     WF=.67; %ft %Fuselage Width
     D=1/24; %ft %Fuselage Max Depth
 
@@ -96,7 +96,7 @@ for i = 1:10
     Wto(i)=Wstruct+Wp+Wfs+Wsc+Wpl+Wfu
     W = Wto(i)
 end
-figure; grid on;
+%figure; grid on;
 hold on
 
 plot([Wguess Wto], '.-m')
