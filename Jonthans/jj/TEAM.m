@@ -42,7 +42,7 @@ downwash = 0.25;              % Downwash gradient dε/dα [-]
 it       = -1*pi/180;         % Tail incidence angle [rad] (initial guess)
 Cmacw    = -0.05;             % Wing Cm about wing AC (approx from airfoil data)
 tau      = 0.5;               % Elevator effectiveness τe [-] (guess) (used only if you later trim with δe)
-
+CL_MAX = 1.5
 % -----------------------------
 % Layout / CG reference positions (from CG build-up)
 % -----------------------------
@@ -58,6 +58,29 @@ x_cg_0   = 1.5071;            % CG with payload+fuel station from nose [ft]
 L_fuse = 5.0;                 % Fuselage length [ft]
 W_fuse = 8/12;                % Fuselage width [ft]
 H_fuse = 8/12;                % Fuselage height [ft]
+Power = 2.5;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 % Estimated fuselage wetted area [ft^2] (rectangular prism):
 % Swet_f = 2(LW + LH + WH)
@@ -291,7 +314,30 @@ D  = q .* Sw .* CD_total;       % Total drag force [lb]
 
 L  = q .* Sw .* CL;             % Lift force [lb] (should equal W)
 LD = L ./ D;                    % Lift-to-drag ratio [-]
+%% Power curve
+Power_Required1 = D .* V;          % ft*lbf/s
+Power_Required_hp = Power_Required1 / 550;
+mask_stall = CL > CL;
+%Power_Required_hp(mask_stall) = NaN;% Dont plot points for velocity
+%understall velocity(past max cl value
 
+P_available_hp = Power * ones(size(V));  % turn Power avalaible in a vector 
+
+figure
+hold on
+plot(V, Power_Required_hp, 'b-', 'LineWidth', 2, ...
+     'DisplayName', 'Power Required')
+plot(V, P_available_hp, 'r--', 'LineWidth', 2, ...
+     'DisplayName', 'Power Available')
+hold off
+
+xlabel('Velocity (ft/s)')
+ylabel('Power (hp)')
+title('Power Required vs Velocity')
+legend('Location','best')
+grid on
+ 
+%%
 % Find (L/D)_max and corresponding velocity
 [LDmax, idx] = max(LD);
 V_LDmax = V(idx);
