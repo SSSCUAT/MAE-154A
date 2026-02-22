@@ -67,7 +67,7 @@ x_prcg = 0; % CG of propellar
 W = [Ww, Wht, Wvt, Wf, Wlg, Wpr];
 x = [x_wcg, x_hcg, x_vcg, x_fcg, x_lgcg, x_prcg];
 
-x_cg_str = sum(W.*x) / sum(W) % Total structural center of gravity 
+x_cg_str = sum(W.*x) / sum(W); % Total structural center of gravity 
 
 % Weight of Avionics (lbs)
 Wcam = 1.87;  % weight of camera 
@@ -102,7 +102,7 @@ x_fuel = 1.8; % loaction of fuel
 Wtot = [Ww, Wht, Wvt, Wf, Wlg, Wpr, Wcam, Wcomp, Wgps, Wbat, Wserv, Weng]; %weight of structure + avionics
 x_tot  = [x_wcg, x_hcg, x_vcg, x_fcg, x_lgcg, x_prcg, x_cam, x_comp, x_gps, x_bat, x_serv, x_eng];
 
-x_cg_tot = sum(Wtot.*x_tot)/sum(Wtot)
+x_cg_dry = sum(Wtot.*x_tot)/sum(Wtot)
 
 % Initial CG with payload and fuel!!
 W0 = [Ww, Wht, Wvt, Wf, Wlg, Wpr, Wcam, Wcomp, Wgps, Wbat, Wserv, Weng, Wpay, Wfuel]; % initial weight w/ payload and fuel
