@@ -34,7 +34,7 @@ for i = 1:10
 %% Fuselage Weight
 
     lf= 4; %ft %Fuselage Length
-    WF=.83; %ft %Fuselage Width
+    WF=.67; %ft %Fuselage Width
     D=1/24; %ft %Fuselage Max Depth
 
     Wf=200*((W*N/10^5)^0.286*(lf/10)^0.857*((WF+D)/10)*(Ve/100)^0.338)^1.1

@@ -12,7 +12,7 @@ Lf = 4; % length of fuselage (ft)
 % Wing Parameters
 AR = 7.4;         % aspect ratio
 S = (W*2) / (Cl*r*(V^2)); % wing area
-b = sqrt(AR * S); % wing span (tip to tip)
+b = sqrt(AR * S) % wing span (tip to tip)
 %c = S/b;          % chord length 
 c = 0.8; 
 
@@ -43,7 +43,7 @@ Ww = 1.4;      % Weight of wing
 Wht = 0.5233;  % weight of horizontal tail
 Wvt = 0.3728;  % weight of vertical tail
 Wlg = 1.5;     % weight of landing gear
-Wpr = 0.5;     % weight of propellar
+Wpr = .24;     % weight of propellar
 
 % locations of LE, AC, and CG of wing, htail, vtail, landing gear, & prop
 
@@ -57,7 +57,7 @@ x_hcg = x_hle + 0.35*c_ht; % location of horizontal tail cg wrt nose
 
 x_vac = x_wac + Lv;         % location of vertical tail AC wrt nose
 x_vle = x_vac - 0.25*c_vt;  % location of vertical tail leading edge wrt nose
-x_vcg = x_vle + 0.35*c_vt; % location of vertical tail cg wrt nose
+x_vcg = x_vle + 0.35*c_vt; % location of vertical tail cg
 
 x_fcg = 0.4*Lf; % CG of fuselage (estimated)
 x_lgcg = 1.5; % CG of landing gear (estimated)
