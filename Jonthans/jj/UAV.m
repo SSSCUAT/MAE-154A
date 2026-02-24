@@ -373,7 +373,8 @@ Q_t = 1.05;             % Slight interference factor for tail
 CD0_t = K_t * Q_t * Cf_t * (Swet_t/Sref);   % Horizontal tail CD0 contribution
 
 % ==============================================================
-% % 4) VERTICAL TAIL PARASITE DRAG CONTRIBUTION
+% % 4) VERTICAL TAIL PARASITE DRAG CONTRIBUTION 
+% we havent defined our vertical yet 
 % 
 % Sv     = 0.30;          % Vertical tail planform area [ft^2] (placeholder)
 % Swet_v = 2*Sv;          % Vertical tail wetted area [ft^2]
@@ -436,22 +437,16 @@ fprintf('TOTAL CD0 = %.5f\n', CD0_total);
 
 % ==============================================================
 % 8) ADD INDUCED DRAG 
+% Both wing and tail are capable of producing lift so both surfaces 
+% can contribute to induced drag 
 
-W  = 55;                % Aircraft weight [lb]
-AR = 7.4;               % Wing aspect ratio [-]
-e  = 0.85;              % Oswald efficiency factor [-]
+Clw= aw* alpha;  %aw is lift slope of wing already found 
+alphat= (1-downwash)*alpha - it ; 
+Clt= at* alphat ; 
+ew=e; % im assuming the same efficiency for the tail and wing for now 
+et=e ; 
 
-q  = 0.5*rho*V^2;       % Dynamic pressure [lb/ft^2]
-CL = W/(q*Sref);        % Lift coefficient required for level flight [-]
+Cdi= (Clw.^2/ (pi*Arw*ew)) + ((Sth/Sw) * ((Clt.^2)/(pi*Art*et))) ; 
 
-CDi = CL^2/(pi*e*AR);   % Induced drag coefficient
+%Cd_airfoil= ...? currently unknown contacted toohey should know soon 
 
-CD_total = CD0_total + CDi;    % Total drag coefficient
-D = q*Sref*CD_total;           % Total drag force [lb]
-
-fprintf('\n================ TOTAL DRAG AT THIS SPEED ================\n');
-fprintf('Dynamic pressure q = %.2f lb/ft^2\n', q);
-fprintf('Lift coefficient CL = %.4f\n', CL);
-fprintf('Induced drag CDi = %.5f\n', CDi);
-fprintf('Total drag coefficient CD = %.5f\n', CD_total);
-fprintf('Total drag force D = %.2f lb\n', D);
