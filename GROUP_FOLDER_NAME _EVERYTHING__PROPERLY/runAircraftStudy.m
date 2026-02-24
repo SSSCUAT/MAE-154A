@@ -54,15 +54,15 @@ inputs.W = 20;                    % Aircraft weight [lb]
 % DISPLAY / OUTPUT OPTIONS
 % =====================================
 % Control what the computeAircraft function plots or prints
-inputs.makePlots            = 0;   % 1 = create figures, 0 = skip plots
-inputs.makeTable            = 0;   % 1 = display table of results
-inputs.makePrint_stability  = 0;   % 1 = print static margin and stability info
-inputs.makePrint_tail_Volume = 0;  % 1 = print tail volume info
+inputs.makePlots            = 1;   % 1 = create figures, 0 = skip plots
+inputs.makeTable            = 1;   % 1 = display table of results
+inputs.makePrint_stability  = 1;   % 1 = print static margin and stability info
+inputs.makePrint_tail_Volume = 1;  % 1 = print tail volume info
 
 %% VARIABLE SWEEP
 
 sweep_var_name = 'W';               % Name of the field in 'inputs' to vary (e.g., 'W', 'Power', 'EF')
-sweep_values   = [22 25 28 30];     % Values to sweep through for that variable
+sweep_values   = [22 25];     % Values to sweep through for that variable
 
 % Loop over each value in the sweep_values array
 for i = 1:length(sweep_values)
@@ -89,3 +89,39 @@ for i = 1:length(sweep_values)
     % grid on;
 
 end
+%% Monte carlo Iteration Data collection 
+%% ==============================
+%  SAVE RESULTS TO CSV (ROW = CASE)
+% ===============================
+
+% ---- 1. Make sure variables are column vectors ----
+var1 = var1(:);   % e.g. alpha
+var2 = var2(:);   % e.g. CL
+var3 = var3(:);   % e.g. CD
+var4 = var4(:);   % e.g. Cm
+
+% ---- 2. Check they are same length ----
+if ~(length(var1)==length(var2) && ...
+     length(var1)==length(var3) && ...
+     length(var1)==length(var4))
+    error('All variables must have the same number of rows');
+end
+
+% ---- 3. Create table (each row = one case) ----
+ResultsTable = table(var1, var2, var3, var4);
+
+% ---- 4. Optional: Rename columns nicely ----
+ResultsTable.Properties.VariableNames = ...
+    {'Alpha_deg','CL','CD','Cm'};
+
+% ---- 5. Create Results folder (optional but clean) ----
+folderName = 'Results';
+if ~exist(folderName,'dir')
+    mkdir(folderName);
+end
+
+% ---- 6. Save file ----
+fileName = fullfile(folderName,'SimulationResults.csv');
+writetable(ResultsTable, fileName);
+
+disp('Results successfully saved.')
