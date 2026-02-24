@@ -13,7 +13,7 @@ p = Power*550 ;  %Power in lb(ft/s^2)
 
 % Induced Drag
 CDi = (CL^2) / (pi * e * AR);
-
+display(CDi)
 %% Inputs
 v = 55;         % ft/s 
 L = 0.767 * 3.28084;  % chord in ft, found online

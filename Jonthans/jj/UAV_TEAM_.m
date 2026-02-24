@@ -15,7 +15,7 @@ a   = 1116.45;          % Speed of sound at sea level [ft/s]
 % -----------------------------
 % Weight (used for drag sweep)
 % -----------------------------
-W   = 25;                     % Aircraft weight [lb] (update as weight estimate changes)
+W   = 19;                     % Aircraft weight [lb] (update as weight estimate changes)
 
 % -----------------------------
 % Wing geometry (KNOWN)
@@ -28,10 +28,11 @@ lambdaw = 0.40;               % Wing taper ratio ct/cr [-]
 % -----------------------------
 % Horizontal tail geometry (KNOWN)
 % -----------------------------
-Sth      = 0.5331163781;      % Horizontal tail area [ft^2]
-bth      = 1.460296378;       % Horizontal tail span [ft]
-lambdath = 0.50;              % Tail taper ratio ct/cr [-]
+Sth      = Sw*.20;      % Horizontal tail area [ft^2]
 Art      = 4.0;               % Tail aspect ratio [-] (given/assumed)
+bth      = sqrt(Sth*Art);       % Horizontal tail span [ft]
+lambdath = 0.50;              % Tail taper ratio ct/cr [-]
+
 
 % -----------------------------
 % Aero assumptions (EDIT AS NEEDED)
@@ -46,16 +47,16 @@ tau      = 0.5;               % Elevator effectiveness τe [-] (guess) (used onl
 % -----------------------------
 % Layout / CG reference positions (from CG build-up)
 % -----------------------------
-x_wle    = 0.75;              % Wing LE station from nose [ft]
+x_wle    = 0.75;              % Wing LE location from nose [ft]
 x_cg_str = 1.7147;            % Structural CG station from nose [ft]
 x_cg_tot = 1.4103;            % CG with avionics station from nose [ft]
 x_cg_0   = 1.5071;            % CG with payload+fuel station from nose [ft]
-
+hacw = 0.25;  
 % -----------------------------
 % Fuselage geometry (for drag)
 % Given: 8in x 8in x 5ft box
 % -----------------------------
-L_fuse = 5.0;                 % Fuselage length [ft]
+L_fuse = 4.0;                 % Fuselage length [ft]
 W_fuse = 8/12;                % Fuselage width [ft]
 H_fuse = 8/12;                % Fuselage height [ft]
 
@@ -66,6 +67,13 @@ Swet_f = 2*(L_fuse*W_fuse + L_fuse*H_fuse + W_fuse*H_fuse);
 % Equivalent "diameter" used in fuselage fineness ratio for Raymer form factor.
 % For a square-ish fuselage, using width is a reasonable approximation.
 d_fuse = W_fuse;              % [ft]
+ 
+
+% Tail mounting rule:
+% Tail root TRAILING EDGE is flush with fuselage end (nothing sticks out)
+% => tail root leading edge is at (L_fuse - Crth)
+% Tail AC is at 25% of tail root chord behind tail LE
+% => tail AC = L_fuse - 0.75*Crth
 
 %% ========================================================================
 % 2) PLANFORM GEOMETRY (ROOT, TIP, MAC) - WING + TAIL
@@ -99,24 +107,38 @@ fprintf("aw (wing 3D) = %.4f 1/rad\n", aw);
 fprintf("at (tail 3D) = %.4f 1/rad\n", at);
 
 %% ========================================================================
-% 4) LONGITUDINAL REFERENCE LOCATIONS (MEASURED FROM WING LE)
+% 4) LONGITUDINAL REFERENCE LOCATIONS (GEOMETRY-BASED, NOT GUESSED)
 % ========================================================================
-% Wing aerodynamic center location (fraction of wing MAC)
-hacw = 0.25;                      % Wing AC at 25% MAC (standard subsonic assumption)
+% Compute actual wing AC and tail AC locations using real geometry (feet),
+% then convert to nondimensional h quantities only when needed.
 
-% Wing AC from wing LE (dimensional)
-x_ac_w_LE = hacw*Cw;              % [ft]
+hacw = 0.25;                 % wing AC at 25% MAC
+hact = 0.25;                 % tail AC at 25% chord (root-chord approx)
 
-% Tail arm assumption:
-% Lh is distance from wing AC to tail AC (design/layout choice)
-% Here: assume Lh = 4*Cw (update once layout is finalized)
-Lh = 4*Cw;                        % [ft] wing AC -> tail AC
+% Wing AC location from nose [ft]
+x_wac = x_wle + hacw*Cw;
 
-% Tail AC from wing LE (dimensional)
-x_ac_t_LE = x_ac_w_LE + Lh;       % [ft]
+% Tail AC location from nose [ft]
+% Tail root trailing edge flush with fuselage end:
+% x_tac = L_fuse - 0.75*Crth   (derived from tail LE = L_fuse - Crth, then +0.25*Crth)
+x_tac = L_fuse - (1 - hact)*Crth;
 
-% Tail AC nondimensional from wing LE
-h_ac_t = x_ac_t_LE / Cw;          % [-]
+% Distance from wing AC to tail AC (this replaces Lh guess)
+Lh = x_tac - x_wac;
+
+% Tail AC location measured from wing LE [ft]
+x_ac_t_LE = x_tac - x_wle;
+display(x_ac_t_LE)
+
+% Nondimensional tail AC location from wing LE
+h_ac_t = x_ac_t_LE / Cw;
+
+fprintf("\n==================== REFERENCE LOCATIONS ====================\n");
+fprintf("Wing AC location from nose x_wac = %.4f ft\n", x_wac);
+fprintf("Tail AC location from nose x_tac = %.4f ft\n", x_tac);
+fprintf("Wing AC -> Tail AC distance Lh   = %.4f ft\n", Lh);
+fprintf("Tail AC from wing LE x_ac_t_LE   = %.4f ft\n", x_ac_t_LE);
+fprintf("Tail AC nondim h_ac_t            = %.4f\n", h_ac_t);
 
 %% ========================================================================
 % 5) NEUTRAL POINT (hn) + STATIC MARGIN (SM)
@@ -143,21 +165,18 @@ fprintf("hcg_0   = %.4f  --> SM_0   = %.4f (%.1f%% MAC)\n", hcg_0,   SM_0,   100
 %% ========================================================================
 % 6) TAIL ARM lt (CG -> TAIL AC) AND TAIL VOLUME VH
 % ========================================================================
-% Convert wing/tail AC to nose stations, then compute tail arm lt = x_tac - x_cg.
-x_wac = x_wle + x_ac_w_LE;        % Wing AC station from nose [ft]
-x_tac = x_wac + Lh;               % Tail AC station from nose [ft]
+% Tail arm lt is measured from the CG to the tail AC (both from nose).
 
-lt_str = x_tac - x_cg_str;        % Tail arm for structural CG [ft]
-lt_tot = x_tac - x_cg_tot;        % Tail arm for avionics CG [ft]
-lt_0   = x_tac - x_cg_0;          % Tail arm for payload+fuel CG [ft]
+lt_str = x_tac - x_cg_str;
+lt_tot = x_tac - x_cg_tot;
+lt_0   = x_tac - x_cg_0;
 
-% Tail volume coefficient: VH = (St * lt) / (Sw * Cw)
+% Tail volume coefficient VH = (St * lt) / (Sw * Cw)
 VH_str = (Sth*lt_str)/(Sw*Cw);
 VH_tot = (Sth*lt_tot)/(Sw*Cw);
 VH_0   = (Sth*lt_0)  /(Sw*Cw);
 
-fprintf("\n==================== TAIL VOLUME ====================\n");
-fprintf("Tail AC station x_tac = %.4f ft\n", x_tac);
+fprintf("\n==================== TAIL ARM & VOLUME ====================\n");
 fprintf("lt_str = %.4f ft --> VH_str = %.4f\n", lt_str, VH_str);
 fprintf("lt_tot = %.4f ft --> VH_tot = %.4f\n", lt_tot, VH_tot);
 fprintf("lt_0   = %.4f ft --> VH_0   = %.4f\n", lt_0,   VH_0);
@@ -209,19 +228,19 @@ Cmdeltae = -at*VH*tau;          % dCm/dδe (usually -)
 % -----------------------------
 % 8.1 Velocity range
 % -----------------------------
-V = linspace(30, 300, 500);      % [ft/s] (edit as desired)
+V = linspace(30, 100, 500);      % [ft/s] (edit as desired)
 q = 0.5*rho.*V.^2;               % Dynamic pressure [lb/ft^2]
 M = V./a;                        % Mach number [-]
 
 % -----------------------------
 % 8.2 Required CL for level flight
 % -----------------------------
-CL = W ./ (q.*Sw);               % Total aircraft CL required for L=W
+CL = W ./ (q.*Sw) ;               % Total aircraft CL required for L=W
 
 % -----------------------------
 % 8.3 Solve for alpha, tail AoA, and CLw/CLt (same model you've been using)
 % -----------------------------
-alpha = CL ./ aw;          % wing-only alpha (rad)
+alpha = CL ./ aw ;          % wing-only alpha (rad)
 alpha_t = (1 - downwash).*alpha + it;
 
 CLw = aw .* alpha;
