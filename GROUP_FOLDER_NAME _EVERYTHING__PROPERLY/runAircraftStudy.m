@@ -54,16 +54,28 @@ inputs.W = 20;                    % Aircraft weight [lb]
 % DISPLAY / OUTPUT OPTIONS
 % =====================================
 % Control what the computeAircraft function plots or prints
-inputs.makePlots            = 1;   % 1 = create figures, 0 = skip plots
-inputs.makeTable            = 1;   % 1 = display table of results
-inputs.makePrint_stability  = 1;   % 1 = print static margin and stability info
-inputs.makePrint_tail_Volume = 1;  % 1 = print tail volume info
+inputs.makePlots            = 0;   % 1 = create figures, 0 = skip plots
+inputs.makeTable            = 0;   % 1 = display table of results
+inputs.makePrint_stability  = 0;   % 1 = print static margin and stability info
+inputs.makePrint_tail_Volume = 0;  % 1 = print tail volume info
 
 %% VARIABLE SWEEP
 
-sweep_var_name = 'W';               % Name of the field in 'inputs' to vary (e.g., 'W', 'Power', 'EF')
-sweep_values   = [22 25];     % Values to sweep through for that variable
+sweep_var_name = 'e';               % Name of the field in 'inputs' to vary (e.g., 'W', 'Power', 'EF')
+sweep_values   = [0.5:0.01:1];     % Values to sweep through for that variable
+%% STORAGE ARRAYS (ADD THIS ABOVE YOUR SWEEP LOOP)
 
+nCases = length(sweep_values);
+
+SweepValue  = zeros(nCases,1);
+Drag      = zeros(nCases,1);
+StallSpeed  = zeros(nCases,1);
+MaxSpeed    = zeros(nCases,1);
+ROC_Stall   = zeros(nCases,1);
+%
+min_StallSpeed = 55;   % must be BELOW this
+min_MaxSpeed   = 120;   % must be ABOVE this
+min_ROC        = 67;    % must be ABOVE this
 % Loop over each value in the sweep_values array
 for i = 1:length(sweep_values)
     
@@ -87,41 +99,74 @@ for i = 1:length(sweep_values)
     % xlabel('Velocity [ft/s]'); ylabel('Rate of Climb [ft/s]');
     % title(sprintf('Rate of Climb vs Velocity (%s = %.2f)', sweep_var_name, sweep_values(i)));
     % grid on;
-
+    % Store results for this case
+SweepValue(i) = sweep_values(i);
+StallSpeed(i) = outputs.V_stall;
+MaxSpeed(i)   = outputs.V_max;
+ROC_Stall(i)  = outputs.ROC_stall;
 end
-%% Monte carlo Iteration Data collection 
 %% ==============================
-%  SAVE RESULTS TO CSV (ROW = CASE)
-% ===============================
+% SAVE ALL SWEEP CASES INTO ONE CSV FILE
+% ==============================
+% Logical checks (returns true/false arrays)
+stall_ok = StallSpeed <= min_StallSpeed;
+max_ok   = MaxSpeed   >= min_MaxSpeed;
+roc_ok   = ROC_Stall  >= min_ROC;
+PassFlag = stall_ok & max_ok & roc_ok; 
+%%text cleaner
+Result = strings(length(PassFlag),1);
 
-% ---- 1. Make sure variables are column vectors ----
-var1 = var1(:);   % e.g. alpha
-var2 = var2(:);   % e.g. CL
-var3 = var3(:);   % e.g. CD
-var4 = var4(:);   % e.g. Cm
+Result(PassFlag) = "PASS";
+Result(~PassFlag) = "FAIL";
 
-% ---- 2. Check they are same length ----
-if ~(length(var1)==length(var2) && ...
-     length(var1)==length(var3) && ...
-     length(var1)==length(var4))
-    error('All variables must have the same number of rows');
-end
+% fullfile(pwd,'Results')
+% - pwd gives the current working directory (where your script is running)
+% - fullfile safely builds a path using correct slashes for your OS
+% Result: ./Results
 
-% ---- 3. Create table (each row = one case) ----
-ResultsTable = table(var1, var2, var3, var4);
+folderName = fullfile(pwd,'Results');  
 
-% ---- 4. Optional: Rename columns nicely ----
+
+% Create a table object
+% Each input column must be the same length
+% Since SweepValue, StallSpeed, etc. were filled inside the loop,
+% each row corresponds to ONE sweep case
+ResultsTable = table(SweepValue, StallSpeed, MaxSpeed, ROC_Stall,Result);
+
+
+% Rename the table column headers
+% The first column name is dynamic (whatever you set sweep_var_name to)
+% Example: if sweep_var_name = 'Arw', first column becomes 'Arw'
 ResultsTable.Properties.VariableNames = ...
-    {'Alpha_deg','CL','CD','Cm'};
+    {sweep_var_name,'Stall_Speed','Max_Speed','ROC_Stall','Result'};
 
-% ---- 5. Create Results folder (optional but clean) ----
-folderName = 'Results';
-if ~exist(folderName,'dir')
-    mkdir(folderName);
-end
 
-% ---- 6. Save file ----
-fileName = fullfile(folderName,'SimulationResults.csv');
-writetable(ResultsTable, fileName);
+% Create a timestamp string so each run creates a NEW file
+% now         → current date/time
+% datestr     → converts it to readable string
+% Format: yyyy-mm-dd_HH-MM-SS
+% Example: 2026-02-23_14-42-11
+timestamp = datestr(now,'yyyy-mm-dd_HH-MM-SS');
 
-disp('Results successfully saved.')
+
+% Build the full filename
+% sprintf builds a formatted string:
+%   Simulation_<SweepVariable>_<Timestamp>.csv
+%
+% Example output:
+%   Simulation_Arw_2026-02-23_14-42-11.csv
+fileName = fullfile(folderName, ...
+    sprintf('Simulation_%s_%s.csv', sweep_var_name, timestamp));
+
+
+% Write the table to a CSV file
+% writetable automatically:
+%   - Writes column headers
+%   - Writes each row
+%   - Handles formatting
+writetable(ResultsTable,fileName);
+
+
+% Display confirmation in command window
+% Helps you verify where it saved
+disp(['All cases saved to: ' fileName])
