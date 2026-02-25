@@ -35,27 +35,27 @@ lambdath = 0.50;        % [-]
 
 % --- Vertical tail geometry (DEFINE THESE) ---
 % NOTE: Put real values here when you have them.
-Sv   = 0.30;            % [ft^2]  <-- EDIT
-ARv  = 1.8;             % [-]     <-- EDIT (typical small v-tail AR)
-cv   = 0.35;            % [ft]    <-- EDIT (characteristic chord for Re)
-tc_v = 0.12;            % [-]     <-- EDIT
-xcm_v = 0.30;           % [-]     <-- EDIT
-Lam_v = 0;              % [rad]   <-- EDIT
+Sv   = 0.30;            % [ft^2]  
+ARv  = 1.8;             % [-]     
+cv   = 0.35;            % [ft]    
+tc_v = 0.12;            % [-]     
+xcm_v = 0.30;           % [-]     
+Lam_v = 0;              % [rad]   
 
 % --- Aero assumptions ---
 e        = 0.85;        % [-]
 cla      = 5.73;        % [1/rad]
 downwash = 0.25;        % [-] dε/dα
 tau      = 0.5;         % [-] elevator effectiveness
-Cmacw    = -0.05;       % [-] wing Cm about wing AC (airfoil-ish)
+Cmacw    = -0.05;       % [-] wing Cm about wing AC 
 
 % --- FIXED TAIL INCIDENCE (FIRST PASS) ---
-it = 3*pi/180;          % [rad] keep fixed (your request)
+it = 3*pi/180;          % [rad] 
 
 % --- Locations (from nose) ---
 x_wle     = 1.0;        % [ft] wing leading edge location
 x_cg_dry  = 1.5339;     % [ft]
-x_cg_half = 1.4632;     % [ft] (we’ll use this as “design case”)
+x_cg_half = 1.4632;     % [ft] 
 x_cg_0    = 1.4496;     % [ft]
 
 % --- Fuselage (box: 8in x 8in x 5ft) ---
