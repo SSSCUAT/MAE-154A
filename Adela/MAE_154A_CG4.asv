@@ -22,9 +22,9 @@ c = 0.8;
 V_ht = 0.5;       % horizontal tail volume coefficient (SEARCHED UP!!)
 Lh = 4*c;         % distance from AC of wing to AC of horizontal tail
 % S_ht = (V_ht*S*c) / Lh; % Horizonatil tail area
-% Sth = 0.2 * Sw;
-% bth = sqrt(Art*Sth);% Horizontal tail wing span
-% c_ht = Sth / bth;     % Horizontal tail chord length
+S_ht = 0.2 * Sw;
+b_ht = sqrt(Art*S_ht);% Horizontal tail wing span
+% c_ht = S_ht / b_ht;     % Horizontal tail chord length
 c_ht = 0.38;
 
 % Vertical tail parameters
