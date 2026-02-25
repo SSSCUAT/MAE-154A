@@ -169,8 +169,21 @@ else
     ROC_stall = NaN;
 end
 
+%% 
+% Inputs:
+% eta_pr = propeller efficiency
+% c_p    = specific fuel consumption (1/hr or 1/s depending on units)
+% CL     = lift coefficient
+% CD     = drag coefficient
+% rho    = air density (slug/ft^3 for Imperial)
+% S      = wing area (ft^2)
+% Wi     = initial weight (lbf)
+% Wf     = final weight (lbf)
+
+%E = (eta_pr * CL^(3/2) / (c_p * CD)) * sqrt(2 * rho * S) * (1/sqrt(Wf) - 1/sqrt(Wi));
+
 %% ========================================================================
-% 9) OUTPUT STORAGE
+% ) OUTPUT STORAGE
 outputs = struct;
 outputs.V = V;
 outputs.CL = CL;
@@ -209,7 +222,8 @@ outputs.SM_0 = SM_0;
 outputs.V_stall = V_stall;
 outputs.V_max   = V_max;
 outputs.ROC     = ROC;
-outputs.ROC_stall = ROC_stall;   
+outputs.ROC_stall = ROC_stall;
+%outputs.E
 
 
 if makePlots
