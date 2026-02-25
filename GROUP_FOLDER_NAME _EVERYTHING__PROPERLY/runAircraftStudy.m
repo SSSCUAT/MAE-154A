@@ -61,21 +61,9 @@ inputs.makePrint_tail_Volume = 0;  % 1 = print tail volume info
 
 %% VARIABLE SWEEP
 
-sweep_var_name = 'e';               % Name of the field in 'inputs' to vary (e.g., 'W', 'Power', 'EF')
-sweep_values   = [0.5:0.01:1];     % Values to sweep through for that variable
-%% STORAGE ARRAYS (ADD THIS ABOVE YOUR SWEEP LOOP)
+sweep_var_name = 'W';               % Name of the field in 'inputs' to vary (e.g., 'W', 'Power', 'EF')
+sweep_values   = [22 25 28 30];     % Values to sweep through for that variable
 
-nCases = length(sweep_values);
-
-SweepValue  = zeros(nCases,1);
-Drag      = zeros(nCases,1);
-StallSpeed  = zeros(nCases,1);
-MaxSpeed    = zeros(nCases,1);
-ROC_Stall   = zeros(nCases,1);
-%
-min_StallSpeed = 55;   % must be BELOW this
-min_MaxSpeed   = 120;   % must be ABOVE this
-min_ROC        = 67;    % must be ABOVE this
 % Loop over each value in the sweep_values array
 for i = 1:length(sweep_values)
     
@@ -99,74 +87,5 @@ for i = 1:length(sweep_values)
     % xlabel('Velocity [ft/s]'); ylabel('Rate of Climb [ft/s]');
     % title(sprintf('Rate of Climb vs Velocity (%s = %.2f)', sweep_var_name, sweep_values(i)));
     % grid on;
-    % Store results for this case
-SweepValue(i) = sweep_values(i);
-StallSpeed(i) = outputs.V_stall;
-MaxSpeed(i)   = outputs.V_max;
-ROC_Stall(i)  = outputs.ROC_stall;
+
 end
-%% ==============================
-% SAVE ALL SWEEP CASES INTO ONE CSV FILE
-% ==============================
-% Logical checks (returns true/false arrays)
-stall_ok = StallSpeed <= min_StallSpeed;
-max_ok   = MaxSpeed   >= min_MaxSpeed;
-roc_ok   = ROC_Stall  >= min_ROC;
-PassFlag = stall_ok & max_ok & roc_ok; 
-%%text cleaner
-Result = strings(length(PassFlag),1);
-
-Result(PassFlag) = "PASS";
-Result(~PassFlag) = "FAIL";
-
-% fullfile(pwd,'Results')
-% - pwd gives the current working directory (where your script is running)
-% - fullfile safely builds a path using correct slashes for your OS
-% Result: ./Results
-
-folderName = fullfile(pwd,'Results');  
-
-
-% Create a table object
-% Each input column must be the same length
-% Since SweepValue, StallSpeed, etc. were filled inside the loop,
-% each row corresponds to ONE sweep case
-ResultsTable = table(SweepValue, StallSpeed, MaxSpeed, ROC_Stall,Result);
-
-
-% Rename the table column headers
-% The first column name is dynamic (whatever you set sweep_var_name to)
-% Example: if sweep_var_name = 'Arw', first column becomes 'Arw'
-ResultsTable.Properties.VariableNames = ...
-    {sweep_var_name,'Stall_Speed','Max_Speed','ROC_Stall','Result'};
-
-
-% Create a timestamp string so each run creates a NEW file
-% now         → current date/time
-% datestr     → converts it to readable string
-% Format: yyyy-mm-dd_HH-MM-SS
-% Example: 2026-02-23_14-42-11
-timestamp = datestr(now,'yyyy-mm-dd_HH-MM-SS');
-
-
-% Build the full filename
-% sprintf builds a formatted string:
-%   Simulation_<SweepVariable>_<Timestamp>.csv
-%
-% Example output:
-%   Simulation_Arw_2026-02-23_14-42-11.csv
-fileName = fullfile(folderName, ...
-    sprintf('Simulation_%s_%s.csv', sweep_var_name, timestamp));
-
-
-% Write the table to a CSV file
-% writetable automatically:
-%   - Writes column headers
-%   - Writes each row
-%   - Handles formatting
-writetable(ResultsTable,fileName);
-
-
-% Display confirmation in command window
-% Helps you verify where it saved
-disp(['All cases saved to: ' fileName])

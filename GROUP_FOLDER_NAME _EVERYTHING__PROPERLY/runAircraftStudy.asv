@@ -59,19 +59,13 @@ inputs.makeTable            = 0;   % 1 = display table of results
 inputs.makePrint_stability  = 0;   % 1 = print static margin and stability info
 inputs.makePrint_tail_Volume = 0;  % 1 = print tail volume info
 
-%% VARIABLE SWEEP
-
-sweep_var_name = 'Arw';               % Name of the field in 'inputs' to vary (e.g., 'W', 'Power', 'EF')
-sweep_values   = [8 9 ];     % Values to sweep through for that variable
-%% STORAGE ARRAYS (ADD THIS ABOVE YOUR SWEEP LOOP)
-
-nCases = length(sweep_values);
-
-SweepValue  = zeros(nCases,1);
-Drag      = zeros(nCases,1);
-StallSpeed  = zeros(nCases,1);
-MaxSpeed    = zeros(nCases,1);
-ROC_Stall   = zeros(nCases,1);
+%% =====================================
+% VARIABLE SWEEP
+% =====================================
+% This section allows you to sweep ANY single input variable easily.
+% You just define the field name and the array of values you want to iterate.
+sweep_var_name = 'W';               % Name of the field in 'inputs' to vary (e.g., 'W', 'Power', 'EF')
+sweep_values   = [22 25 28 30];     % Values to sweep through for that variable
 
 % Loop over each value in the sweep_values array
 for i = 1:length(sweep_values)
@@ -96,35 +90,5 @@ for i = 1:length(sweep_values)
     % xlabel('Velocity [ft/s]'); ylabel('Rate of Climb [ft/s]');
     % title(sprintf('Rate of Climb vs Velocity (%s = %.2f)', sweep_var_name, sweep_values(i)));
     % grid on;
-    % Store results for this case
-SweepValue(i) = sweep_values(i);
-StallSpeed(i) = outputs.V_stall;
-MaxSpeed(i)   = outputs.V_max;
-ROC_Stall(i)  = outputs.ROC_stall;
+
 end
-
-%% ==============================
-% SAVE EACH SWEEP CASE IN EXISTING RESULTS FOLDER
-% ==============================
-
-folderName = fullfile(pwd,'Results');  % use existing Results folder
-
-% Loop through each case and save individually
-for i = 1:length(SweepValue)
-    
-    % Unique filename for this case
-    % Example: Simulation_Arw_8.csv
-    fileName = fullfile(folderName, ...
-        sprintf('Simulation_%s_%.2f.csv', sweep_var_name, SweepValue(i)));
-    
-    % Create table with one row (current case)
-    T = table(SweepValue(i), (i), MaxSpeed(i), ROC_Stall(i));
-    T.Properties.VariableNames = ...
-        {sweep_var_name,'Stall_Speed','Max_Speed','ROC_Stall'};
-    
-    % Save table
-    writetable(T,fileName);
-    
-end
-
-disp('All cases saved in Results folder.')

@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 %% 154A Project
 clear; clc;
 
@@ -24,6 +25,8 @@ mu  = 3.737e-7;     % slug/(ft·s)
 
 %% Reynolds Number
 Re = (rho * v * L) / mu;
+=======
+>>>>>>> f471e6bbb995297936b74c5b570055cc1b7c9fda
 
 %% Power Required
 q = 0.5 * rho * v^2;
@@ -32,39 +35,8 @@ D = q * S * cd_t;        % lbf
 P = D * v;               % ft*lbf/s
 P_hp = P / 550;          % horsepower
 
-%% Output
-fprintf('Velocity: %.1f ft/s\n', v);
-fprintf('Reynolds Number: %.2e\n', Re);
-fprintf('Power Required: %.1f hp\n', P_hp);
-fprintf('CDi: %.4f\n', CDi);
 
-%% Lift Drag Curve 
-% Drag vs Velocity Curve
-v1 = linspace(30,205,400);   % ft/s
 
-CL1  = (2*W) ./ (rho .* v1.^2 .* S);
-CDi1 = (CL1.^2) ./ (pi * e * AR);
-
-q1 = 0.5 .* rho .* v1.^2;
-
-D_p = q1 .* S .* CD_p;     % parasite drag
-D_I = q1 .* S .* CDi1;    % induced drag
-D1  = D_p + D_I;          % total drag
-Thurst = p./(v1);
-
-figure 
-hold on
-plot(v1, D1,  'b-',  'LineWidth', 2, 'DisplayName', 'Total Drag')
-plot(v1, D_p, 'r--', 'LineWidth', 2, 'DisplayName', 'Parasite Drag')
-plot(v1, D_I, 'g:',  'LineWidth', 2, 'DisplayName', 'Induced Drag')
-%plot(v1, Thurst, 'white', 'LineWidth',2, 'DisplayName','Thurst')
-hold off
-
-xlabel('Velocity (ft/s)')
-ylabel('Drag (lbf)')
-title('Drag vs Velocity')
-legend('Location','best')
-grid on
 
 %% power curve 
 v_1 = linspace(4,205,400);
@@ -81,12 +53,11 @@ D2  = D_p2 + D_I2;          % total drag
 
 Power_Required1 = D2 .* v_1;          % ft*lbf/s
 Power_Required_hp = Power_Required1 / 550;
-%%
+%
 mask_stall = CL2 > CL;
 %Power_Required_hp(mask_stall) = NaN;% Dont plot points for velocity
 %understall velocity(past max cl value
 
-%%
 P_available_hp = Power * ones(size(v_1));  % turn Power avalaible in a vector 
 
 figure
@@ -102,24 +73,7 @@ ylabel('Power (hp)')
 title('Power Required vs Velocity')
 legend('Location','best')
 grid on
-
-figure
-hold on 
-plot(v1,CL1)
-yline(1.5,'r--')
-title('Cl vs V, drag curve')
-xlabel('v')
-ylabel('Cl')
-hold off
-
-figure 
-hold on
-plot(v_1,CL2)
-yline(1.5,'r--')
-title('Cl vs V Power Curve')
-xlabel('v')
-ylabel('Cl')
-hold off 
+ 
 %% Fuel consumption 
 Flight_Time_Min = 45;  % How many minutes you want to fly
 
