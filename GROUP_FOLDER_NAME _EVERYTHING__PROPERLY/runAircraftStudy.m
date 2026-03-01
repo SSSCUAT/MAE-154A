@@ -49,6 +49,19 @@ inputs.EF    = 0.6;              % Propeller efficiency (0–1)
 
 % Default aircraft weight (will be overwritten by sweep)
 inputs.W = 20;                    % Aircraft weight [lb]
+%% Btich ah mg jonathan dumb fucking bitch ah variables
+inputs.x_cg_dry  = 1.5339;     % [ft]
+inputs.x_cg_half = 1.4632;     % [ft] 
+inputs.x_cg_0    = 1.4496;     % [ft]
+% new vertical tail components 
+inputs.S_vt   = 0.30;            % [ft^2]  
+inputs.AR_vt  = 1.8;             % [-]  
+inputs.b_vt = 0.4077735426 ; 
+inputs.c_vt  = 0.35;            % [ft]    
+inputs.tc_v = 0.12;            % [-]     
+inputs.xcm_v = 0.30;           % [-]     
+inputs.Lam_v = 0;              % [rad]   
+
 
 %% =====================================
 % DISPLAY / OUTPUT OPTIONS
