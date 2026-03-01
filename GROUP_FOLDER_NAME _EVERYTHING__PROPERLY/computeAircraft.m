@@ -38,7 +38,15 @@ EF    = inputs.EF;
 L_fuse = inputs.L_fuse;
 W_fuse = inputs.W_fuse;
 H_fuse = inputs.H_fuse;
+%% new vertical tail comps 
 
+S_vt   = inputs.S_vt ; 
+AR_vt  = inputs.AR_vt ; 
+b_vt = inputs.b_vt ; 
+c_vt  = inputs.c_vt ; 
+tc_v =  inputs.tc_v ;     
+xcm_v = inputs.xcm_v ; 
+Lam_v = inputs.Lam_v ; 
 
 
 
@@ -309,7 +317,7 @@ outputs.V_stall = V_stall;
 outputs.V_max   = V_max;
 outputs.ROC     = ROC;
 outputs.ROC_stall = ROC_stall;   
-%% new
+%% new from jonathan
 %
 outputs.deltae= deltae ; 
 outputs.CLalpha  = CLalpha;

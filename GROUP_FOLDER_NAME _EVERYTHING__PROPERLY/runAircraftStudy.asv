@@ -49,6 +49,19 @@ inputs.EF    = 0.6;              % Propeller efficiency (0–1)
 
 % Default aircraft weight (will be overwritten by sweep)
 inputs.W = 20;                    % Aircraft weight [lb]
+%% Btich ah mg jonathan dumb fucking bitch ah variables
+inputs.x_cg_dry  = 1.5339;     % [ft]
+inputs.x_cg_half = 1.4632;     % [ft] 
+inputs.x_cg_0    = 1.4496;     % [ft]
+% new vertical tail components 
+inputs.S_vt   = 0.30;            % [ft^2]  
+inputs.AR_vt  = 1.8;             % [-]  
+b_vt = 0.4077735426 ; 
+c_vt  = 0.35;            % [ft]    
+tc_v = 0.12;            % [-]     
+xcm_v = 0.30;           % [-]     
+Lam_v = 0;              % [rad]   
+
 
 %% =====================================
 % DISPLAY / OUTPUT OPTIONS
@@ -59,11 +72,8 @@ inputs.makeTable            = 0;   % 1 = display table of results
 inputs.makePrint_stability  = 0;   % 1 = print static margin and stability info
 inputs.makePrint_tail_Volume = 0;  % 1 = print tail volume info
 
-%% =====================================
-% VARIABLE SWEEP
-% =====================================
-% This section allows you to sweep ANY single input variable easily.
-% You just define the field name and the array of values you want to iterate.
+%% VARIABLE SWEEP
+
 sweep_var_name = 'W';               % Name of the field in 'inputs' to vary (e.g., 'W', 'Power', 'EF')
 sweep_values   = [22 25 28 30];     % Values to sweep through for that variable
 
