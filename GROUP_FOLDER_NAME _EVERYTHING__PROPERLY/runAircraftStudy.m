@@ -50,6 +50,7 @@ inputs.EF    = 0.6;              % Propeller efficiency (0–1)
 % Default aircraft weight (will be overwritten by sweep)
 inputs.W = 20;                    % Aircraft weight [lb]
 %% Btich ah mg jonathan dumb fucking bitch ah variables
+% all jonathan changes
 inputs.x_cg_dry  = 1.5339;     % [ft]
 inputs.x_cg_half = 1.4632;     % [ft] 
 inputs.x_cg_0    = 1.4496;     % [ft]
