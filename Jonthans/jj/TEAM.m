@@ -35,9 +35,10 @@ lambdath = 0.50;        % [-]
 
 % --- Vertical tail geometry (DEFINE THESE) ---
 % NOTE: Put real values here when you have them.
-Sv   = 0.30;            % [ft^2]  
-ARv  = 1.8;             % [-]     
-cv   = 0.35;            % [ft]    
+S_vt   = 0.30;            % [ft^2]  
+AR_vt  = 1.8;  % [-]  
+b_vt 
+c_vt  = 0.35;            % [ft]    
 tc_v = 0.12;            % [-]     
 xcm_v = 0.30;           % [-]     
 Lam_v = 0;              % [rad]   
