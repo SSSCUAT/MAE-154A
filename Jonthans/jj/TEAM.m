@@ -199,12 +199,12 @@ CLt = CL0 + at*(alpha_t - it) + CLdeltae.*deltae;
 % Wetted areas (first-pass)
 Swet_w = 2*Sw;
 Swet_t = 2*Sth;
-Swet_v = 2*Sv;
+Swet_v = 2*S_vt;
 
 % Reynolds numbers (needed internally for Cf; we just won’t print them)
 Re_w = rho.*V.*Cw    ./ mu;
 Re_t = rho.*V.*Cth   ./ mu;
-Re_v = rho.*V.*cv    ./ mu;
+Re_v = rho.*V.*c_vt    ./ mu;
 Re_f = rho.*V.*L_fuse./ mu;
 
 % Skin friction (Raymer-style)

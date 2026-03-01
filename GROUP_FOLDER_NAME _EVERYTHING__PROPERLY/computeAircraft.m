@@ -48,6 +48,7 @@ tc_v =  inputs.tc_v ;
 xcm_v = inputs.xcm_v ; 
 Lam_v = inputs.Lam_v ; 
 
+V=inputs.V ; 
 
 
 
@@ -139,7 +140,6 @@ Cmdeltae = -at*VH*tau;
 %% ========================================================================
 % 8) VELOCITY SWEEP
 % ========================================================================
-V = linspace(30, 100, 500);     % [ft/s]
 q = 0.5*rho.*V.^2;
 M = V./a;
 
@@ -166,12 +166,12 @@ CLt = CL0 + at*(alpha_t - it) + CLdeltae.*deltae;
 % Wetted areas (first-pass)
 Swet_w = 2*Sw;
 Swet_t = 2*Sth;
-Swet_v = 2*Sv;
+Swet_v = 2*S_vt;
 
 % Reynolds numbers (needed internally for Cf; we just won’t print them)
 Re_w = rho.*V.*Cw    ./ mu;
 Re_t = rho.*V.*Cth   ./ mu;
-Re_v = rho.*V.*cv    ./ mu;
+Re_v = rho.*V.*c_vt    ./ mu;
 Re_f = rho.*V.*L_fuse./ mu;
 
 % Skin friction (Raymer-style)
@@ -246,7 +246,7 @@ deltae_LDmax_deg  = rad2deg(deltae(idx));
 V_stall = sqrt(2 * W / (rho * Sw * CL_MAX));
 
 %% Maximum speed (velocity where Power Required <= Power Available)
-V_max_idx = find(Power_Required_hp <= P_available_hp, 1, 'last');
+V_max_idx = find(Power_required_hp <= Power_available_hp, 1, 'last');
 if ~isempty(V_max_idx)
     V_max = V(V_max_idx);
 else
@@ -254,7 +254,7 @@ else
 end
 
 %% Rate of climb (ft/s)
-ROC = (P_available_hp - Power_Required_hp) * 550 ./ W;  % ft*lbf/s / lb = ft/s
+ROC = (Power_available_hp - Power_required_hp) * 550 ./ W;  % ft*lbf/s / lb = ft/s
 
 % Rate of climb at stall
 if ~isnan(V_stall)
@@ -295,8 +295,8 @@ outputs.D = D;
 outputs.LD = LD;
 outputs.V_LDmax = V_LDmax;
 outputs.LDmax = LDmax;
-outputs.Power_Required_hp = Power_Required_hp;
-outputs.P_available_hp = P_available_hp;
+outputs.Power_required_hp = Power_required_hp;
+outputs.Power_available_hp = Power_available_hp;
 outputs.Re_w = Re_w;
 outputs.Re_t = Re_t;
 outputs.Re_f = Re_f;

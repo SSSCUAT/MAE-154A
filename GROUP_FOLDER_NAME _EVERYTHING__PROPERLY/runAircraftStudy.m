@@ -63,6 +63,8 @@ inputs.xcm_v = 0.30;           % [-]
 inputs.Lam_v = 0;              % [rad]   
 
 
+inputs.V = linspace(30, 100, 500);     % [ft/s]
+
 %% =====================================
 % DISPLAY / OUTPUT OPTIONS
 % =====================================
