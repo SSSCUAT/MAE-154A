@@ -255,21 +255,8 @@ else
     ROC_stall = NaN;
 end
 
-%% 
-% Inputs:
-% eta_pr = propeller efficiency
-% c_p    = specific fuel consumption (1/hr or 1/s depending on units)
-% CL     = lift coefficient
-% CD     = drag coefficient
-% rho    = air density (slug/ft^3 for Imperial)
-% S      = wing area (ft^2)
-% Wi     = initial weight (lbf)
-% Wf     = final weight (lbf)
-
-%E = (eta_pr * CL^(3/2) / (c_p * CD)) * sqrt(2 * rho * S) * (1/sqrt(Wf) - 1/sqrt(Wi));
-
 %% ========================================================================
-% ) OUTPUT STORAGE
+% 9) OUTPUT STORAGE
 outputs = struct;
 outputs.V = V;
 outputs.CL = CL;
@@ -303,7 +290,7 @@ outputs.hcg_dry = hcg_dry;
 outputs.hcg_half = hcg_half;
 outputs.hcg_0 = hcg_0;
 outputs.SM_dry = SM_dry;
-outputs.SM_half = SM_half;
+outputs.SM_half = SM_tot;
 outputs.SM_0 = SM_0;
 outputs.V_stall = V_stall;
 outputs.V_max   = V_max;
@@ -311,32 +298,7 @@ outputs.ROC     = ROC;
 outputs.ROC_stall = ROC_stall;   
 %% new
 %
-outputs.deltae= deltae ; 
-outputs.CLalpha  = CLalpha;
-outputs.CL0      = CL0;
-outputs.CLi      = CLi;
-outputs.CMi      = CMi;
-outputs.Cmalpha  = Cmalpha;
-outputs.Cm0      = Cm0;
-outputs.CLdeltae = CLdeltae;
-outputs.Cmdeltae = Cmdeltae;
-outputs.alpha_deg = rad2deg(alpha);
-outputs.alpha_t_deg = rad2deg(alpha_t);
-outputs.deltae_deg = rad2deg(deltae);
-
-outputs.V_LDmax            = V_LDmax;
-outputs.LDmax              = LDmax;
-outputs.CL_LDmax           = CL_LDmax;
-outputs.alpha_LDmax_deg    = alpha_LDmax_deg;
-outputs.alpha_t_LDmax_deg  = alpha_t_LDmax_deg;
-outputs.deltae_LDmax_deg   = deltae_LDmax_deg;
-
-
 %%
-outputs.ROC_stall = ROC_stall;
-%outputs.E
-
-
 if makePlots
     % Power
     figure; hold on
