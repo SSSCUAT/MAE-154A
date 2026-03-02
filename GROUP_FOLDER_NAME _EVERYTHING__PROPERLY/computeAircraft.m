@@ -100,6 +100,12 @@ x_fuel      = inputs.x_fuel;
 % Display Options
 makePlots   = inputs.makePlots;
 
+% (10) DISPLAY OPTIONS (directly from inputs)
+makePlots            = inputs.makePlots;           
+makeTable            = inputs.makeTable;           
+makePrint_stability  = inputs.makePrint_stability; 
+makePrint_tail_Volume = inputs.makePrint_tail_Volume;
+
 %% ADELAS MATLAB FILES CG and WEiGHT
 % =====================================
 % SIZING, WEIGHT ESTIMATION & CG CALCULATION (INSIDE FUNCTION)
@@ -173,15 +179,6 @@ for i = 1:5
     W_current = Wto(i); 
 end
 
-% Optional plot of convergence
-if inputs.makePlots == 1
-    figure('Name','Weight Convergence'); hold on; grid on;
-    plot([inputs.Wguess, Wto], '.-m', 'LineWidth', 1.5, 'MarkerSize', 15);
-    title('Takeoff Weight Convergence');
-    xlabel('Iteration'); ylabel('Weight (lbs)');
-end
-disp('Final calculated total weight (5th iteration):');
-disp(Wto(5));
 
 % --- 2. CENTER OF GRAVITY CALCULATIONS ---
 % Aerodynamic Centers and Leading Edges
@@ -236,13 +233,7 @@ W_f_nopay = [W_dry_vec, inputs.Wfuel];
 x_f_nopay = [x_dry_vec, inputs.x_fuel];
 x_cg_f_nopay = sum(W_f_nopay .* x_f_nopay) / sum(W_f_nopay);
 
-
-%% (10) DISPLAY OPTIONS (directly from inputs)
-makePlots            = inputs.makePlots;           
-makeTable            = inputs.makeTable;           
-makePrint_stability  = inputs.makePrint_stability; 
-makePrint_tail_Volume = inputs.makePrint_tail_Volume;
-%% Weight Adelas stuff 
+% Weight Adelas stuff 
 % Map Adela's newly calculated half-fuel CG to the old variable name 
 % so the stability math below doesn't break!
 x_cg_half = x_cg_fhalf_pay; 
@@ -250,13 +241,17 @@ x_cg_half = x_cg_fhalf_pay;
 % (And if your code also looks for the old dry or initial CGs, map them too:)
 x_cg_dry = x_cg_f_nopay; % Or whichever dry scenario you need
 x_cg_0   = x_cg_0;
+%%
 
 
 
 
 
 
-%% Fuselage
+
+
+%% Jonathan 
+% Fuselage
 Swet_f = 2*(L_fuse*W_fuse + L_fuse*H_fuse + W_fuse*H_fuse);
 d_fuse = W_fuse;  % for fuselage form factor
 
