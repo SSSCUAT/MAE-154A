@@ -1,6 +1,7 @@
 clear, clc;
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 % Plane specs
 r = 0.002377;  % air density (slug/ft^3)
 V = 55;        % stall velocity (ft/s)
@@ -15,6 +16,8 @@ AR = 7.4;         % aspect ratio
 S = (W*2) / (Cl*r*(V^2)); % wing area
 b = sqrt(AR * S); % wing span (tip to tip)
 =======
+=======
+>>>>>>> Stashed changes
 run('MAE_154A_weight.m');
 
 % Plane specs
@@ -31,6 +34,9 @@ W = W_pick;
 Arw = 7.4;         % aspect ratio
 Sw = (W*2) / (CL_MAX*rho*(V^2)); % wing area
 bw = sqrt(Arw * Sw); % wing span (tip to tip)
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 %c = S/b;          % chord length 
 c = 0.8; 
@@ -40,6 +46,7 @@ c = 0.8;
 AR_ht = 4;        % horizontal tail aspect ratio (GUESSED!!)
 V_ht = 0.5;       % horizontal tail volume coefficient (SEARCHED UP!!)
 Lh = 4*c;         % distance from AC of wing to AC of horizontal tail
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 S_ht = (V_ht*S*c) / Lh; % Horizonatil tail area
 b_ht = sqrt(AR_ht*S_ht);% Horizontal tail wing span
@@ -69,6 +76,8 @@ Wpr = 0.5;     % weight of propellar
 
 x_wle = 0.75; % wing leading edge wrt nose (ft)
 =======
+=======
+>>>>>>> Stashed changes
 S_th = (V_ht*Sw*c) / Lh; % Horizonatil tail area
 Sth = 0.2 * Sw;
 bth = sqrt(AR_ht*Sth);% Horizontal tail wing span
@@ -95,6 +104,9 @@ Wprop = .24;     % weight of propellar
 % locations of LE, AC, and CG of wing, htail, vtail, landing gear, & prop
 
 x_wle = 1; % wing leading edge wrt nose (ft)
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 x_wac = x_wle + 0.25*c; % location of wing aerodynamic center wrt nose
 x_wcg = x_wle + 0.35*c; % location of wing center of gravity wrt nose
@@ -104,6 +116,7 @@ x_hle = x_hac - 0.25*c_ht; % location of horizontal tail leading edge wrt nose
 x_hcg = x_hle + 0.35*c_ht; % location of horizontal tail cg wrt nose
 
 x_vac = x_wac + Lv;         % location of vertical tail AC wrt nose
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 x_vle = x_vac - 0.25*c_vt;  % location of vertical tail leading edge wrt nose
 x_vcg = x_vle + 0.35*c_vt; % location of vertical tail cg wrt nose
@@ -121,6 +134,8 @@ x_cg_str = sum(W.*x) / sum(W) % Total structural center of gravity
 % Weight of Avionics (lbs)
 Wcam = 1.87;  % weight of camera 
 =======
+=======
+>>>>>>> Stashed changes
                             % the rest calculated further down
 
 x_fcg = 0.4*L_fuse; % CG of fuselage (estimated)
@@ -149,13 +164,21 @@ x_cg_str = sum(W.*x) / sum(W); % Total structural center of gravity
 
 % Weight of Avionics (lbs)
 Wcam = 0.95;  % weight of camera 
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 Wcomp = 0.10; % weight of computer
 Wgps = 0.07;  % weight of GPS
 Wbat = 0.44;  % weight of battery
 Wserv = 0.06; % weight of servos
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 Weng = 3;     % weight of engine
+=======
+Weng = 1.76;     % weight of engine
+Wfs = 0.25;   % weight of fuel system
+>>>>>>> Stashed changes
 =======
 Weng = 1.76;     % weight of engine
 Wfs = 0.25;   % weight of fuel system
@@ -166,6 +189,7 @@ Wbal = 0.66;   % weight of 1 waterballoon
 Wpay = 3*Wbal; % weight of payload
 %Wpay = 0;
 Wfuel = 1.5;   % weight of initial fuel
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 
 % Locations of avionics wrt to nose
@@ -196,6 +220,8 @@ x_0  = [x_wcg, x_hcg, x_vcg, x_fcg, x_lgcg, x_prcg, x_cam, x_comp, x_gps, x_bat,
 x_cg_0 = sum(W0.*x_0)/sum(W0) % initial cg w/ payload and fuel
 
 =======
+=======
+>>>>>>> Stashed changes
 Wfuel_half = 0.75;
 Wfuel_quart = 0.375;
 
@@ -251,5 +277,8 @@ x_f_nopay  = [x_dry, x_fuel];
 
 x_cg_f_nopay = sum(W_f_nopay.*x_f_nopay)/sum(W_f_nopay) % cg w/ no payload and all fuel
 
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
