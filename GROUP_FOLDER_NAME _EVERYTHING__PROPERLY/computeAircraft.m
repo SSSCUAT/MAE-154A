@@ -57,6 +57,14 @@ makePlots            = inputs.makePlots;
 makeTable            = inputs.makeTable;           
 makePrint_stability  = inputs.makePrint_stability; 
 makePrint_tail_Volume = inputs.makePrint_tail_Volume;
+%% Weight Adelas stuff 
+
+
+
+
+
+
+
 %% Fuselage
 Swet_f = 2*(L_fuse*W_fuse + L_fuse*H_fuse + W_fuse*H_fuse);
 d_fuse = W_fuse;  % for fuselage form factor
