@@ -69,11 +69,11 @@ x_novt = [x_wcg, x_hcg, x_fcg, x_lgcg, x_propcg];
 
 x_cg_noVT = sum(W_novt.*x_novt) / sum(W_novt); % cg without vertical tail
 
-% Vertical Tail Parameters (NACA 0012)
+% Vertical Tail Parameters
 lv = x_vac - x_cg_noVT % distance from cg wihtout vt to ac of vt 
 Stv = V_vt*((Sw*bw)/lv) % VERTICAL TAIL AREA
 btv = sqrt(AR_vt*Sv)    % VERTICAL TAIL span
-ctv = Sv / bv           % VERTICAL TAIL chord
+ctv = Sv / bv           % VERTICAL TAIL chord (NACA 0012)
 
 x_vle = x_vac - 0.25*cv;  % location of vertical tail leading edge wrt nose
 x_vcg = x_vle + 0.35*cv; % location of vertical tail cg
