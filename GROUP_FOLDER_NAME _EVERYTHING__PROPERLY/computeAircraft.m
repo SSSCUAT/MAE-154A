@@ -1,55 +1,240 @@
 function outputs = computeAircraft(inputs)
 
-%% =============================
-% UNPACK INPUTS
-% =============================
-rho = inputs.rho;
-mu  = inputs.mu;
-a   = inputs.a;
+%% =====================================
+% UNPACK INPUTS 
+% =====================================
 
-W = inputs.W;
-
-Arw     = inputs.Arw;
-bw      = inputs.bw;
-Sw      = inputs.Sw;
-lambdaw = inputs.lambdaw;
-
+% --- BASE AIRCRAFT GEOMETRY & AERO ---
+rho      = inputs.rho;
+mu       = inputs.mu;
+a        = inputs.a;
+W        = inputs.W;
+Arw      = inputs.Arw;
+bw       = inputs.bw;
+Sw       = inputs.Sw;
+lambdaw  = inputs.lambdaw;
 Sth      = inputs.Sth;
 bth      = inputs.bth;
 lambdath = inputs.lambdath;
 Art      = inputs.Art;
-
 e        = inputs.e;
 cla      = inputs.cla;
 downwash = inputs.downwash;
 it       = inputs.it;
 Cmacw    = inputs.Cmacw;
 tau      = inputs.tau;
-CL_MAX   = inputs.CL_MAX; % ? 
+CL_MAX   = inputs.CL_MAX; 
+Power    = inputs.Power;
+EF       = inputs.EF;
+L_fuse   = inputs.L_fuse;
+W_fuse   = inputs.W_fuse;
+H_fuse   = inputs.H_fuse;
+
+% REMOVED FROM BASE: 
+% x_wle    = inputs.x_wle;      % -> Moved to Adela's section (updated value)
+% x_cg_dry = inputs.x_cg_dry;   % -> Adela's code calculates this dynamically now
+% x_cg_half= inputs.x_cg_half;  % -> Adela's code calculates this dynamically now
+% x_cg_0   = inputs.x_cg_0;     % -> Adela's code calculates this dynamically now
 
 
-x_wle    = inputs.x_wle;
-x_cg_dry = inputs.x_cg_dry;
-x_cg_half = inputs.x_cg_half;
-x_cg_0   = inputs.x_cg_0;
+% --- CHANGES BY JONATHAN ---
+S_vt     = inputs.S_vt; 
+b_vt     = inputs.b_vt; 
+c_vt     = inputs.c_vt; 
+tc_v     = inputs.tc_v;     
+xcm_v    = inputs.xcm_v; 
+Lam_v    = inputs.Lam_v; 
+V        = inputs.V; 
 
-Power = inputs.Power;
-EF    = inputs.EF;
-L_fuse = inputs.L_fuse;
-W_fuse = inputs.W_fuse;
-H_fuse = inputs.H_fuse;
-%% new vertical tail comps 
+% REMOVED FROM JONATHAN:
+% AR_vt  = inputs.AR_vt;        % -> Adela updated this to 1.5, kept in her section
 
-S_vt   = inputs.S_vt ; 
-AR_vt  = inputs.AR_vt ; 
-b_vt = inputs.b_vt ; 
-c_vt  = inputs.c_vt ; 
-tc_v =  inputs.tc_v ;     
-xcm_v = inputs.xcm_v ; 
-Lam_v = inputs.Lam_v ; 
-% changes by jonathan
-V=inputs.V ; 
 
+% --- NEW STUFF FROM ADELA ---
+% Weights & Sizing Parameters
+Wguess      = inputs.Wguess;
+V_stall     = inputs.V_stall;
+V_max_kts   = inputs.V_max_kts;
+N_load      = inputs.N_load;
+sweep_rad   = inputs.sweep_rad;
+tc          = inputs.tc;
+
+% Geometry & Tail Volume Coefficients
+c           = inputs.c;
+c_ht        = inputs.c_ht;
+hac         = inputs.hac;
+V_ht        = inputs.V_ht;
+V_vt        = inputs.V_vt;
+AR_ht       = inputs.AR_ht;
+AR_vt       = inputs.AR_vt;       % Adela's updated value (1.5)
+
+% Specific Component Weights [lbs]
+Wlg         = inputs.Wlg;
+Weng        = inputs.Weng;
+Neng        = inputs.Neng;
+Wfuel       = inputs.Wfuel;
+Wfs         = inputs.Wfs;
+Wcam        = inputs.Wcam;
+Wcomp       = inputs.Wcomp;
+Wgps        = inputs.Wgps;
+Wbat        = inputs.Wbat;
+Wserv       = inputs.Wserv;
+Wbal        = inputs.Wbal;
+N_bal       = inputs.N_bal;
+
+% Component CG Locations [ft]
+x_wle       = inputs.x_wle;       % Adela's updated wing leading edge
+x_fcg       = inputs.x_fcg;
+x_lgcg      = inputs.x_lgcg;
+x_propcg    = inputs.x_propcg;
+x_cam       = inputs.x_cam;
+x_comp      = inputs.x_comp;
+x_gps       = inputs.x_gps;
+x_bat       = inputs.x_bat;
+x_serv      = inputs.x_serv;
+x_eng       = inputs.x_eng;
+x_fs        = inputs.x_fs;
+x_pay       = inputs.x_pay;
+x_fuel      = inputs.x_fuel;
+
+% Display Options
+makePlots   = inputs.makePlots;
+
+%% ADELAS MATLAB FILES CG and WEiGHT
+% =====================================
+% SIZING, WEIGHT ESTIMATION & CG CALCULATION (INSIDE FUNCTION)
+% =====================================
+
+% Initialize guess
+W_current = inputs.Wguess;
+Wto = zeros(1, 5); % Locked to 5 iterations as requested
+
+% --- 1. ITERATIVE SIZING LOOP (5 ITERATIONS) ---
+for i = 1:5
+    % Compute wing area and span based on current weight
+    Sw = (W_current * 2) / (inputs.CL_MAX * inputs.rho * (inputs.V_stall^2)); 
+    bw = sqrt(inputs.Arw * Sw);
+    
+    % Horizontal Tail Sizing
+    Lh = 4 * inputs.c; 
+    Sth = (inputs.V_ht * Sw * inputs.c) / Lh;
+    bth = sqrt(inputs.AR_ht * Sth);
+    
+    % Vertical Tail Sizing
+    Lv = 4 * inputs.c; 
+    S_vt = (inputs.V_vt * Sw * inputs.c * bw) / Lv;
+    b_vt = sqrt(inputs.AR_vt * S_vt);
+    c_vt = S_vt / b_vt;
+    
+    % Component Weight Estimation (Nicolai)
+    % Wing
+    Ww = 96.948 * ((W_current * inputs.N_load / 10^5)^0.65 * ...
+                   (inputs.Arw / cos(inputs.sweep_rad))^0.57 * ...
+                   (Sw / 100)^0.61 * ...
+                   ((1 + inputs.lambdaw) / (2 * inputs.tc))^0.36 * ...
+                   (1 + inputs.V_max_kts / 500)^0.5)^0.993;
+                   
+    % Fuselage
+    D_fuse = 1/24;
+    Wf = 200 * ((W_current * inputs.N_load / 10^5)^0.286 * ...
+                (inputs.L_fuse / 10)^0.857 * ...
+                ((inputs.W_fuse + D_fuse) / 10) * ...
+                (inputs.V_max_kts / 100)^0.338)^1.1;
+                
+    % Horizontal Tail
+    hach_local = 0.25;
+    lh_dist = 35/12 + (0.5 - inputs.hac)*inputs.c - (0.5 - hach_local)*inputs.c_ht;
+    thr = inputs.c_ht * inputs.tc * 12; 
+    Wht = 127 * ((W_current * inputs.N_load / 10^5)^0.87 * ...
+                 (Sth / 100)^1.2 * ...
+                 (lh_dist / 10)^0.483 * ...
+                 (bth / thr)^0.5)^0.458;
+                 
+    % Vertical Tail
+    cv = 0.5;
+    tvr = cv * inputs.tc * 12; 
+    Wvt = 2 * 98.5 * ((W_current * inputs.N_load / 10^5)^0.87 * ...
+                      (0.5 * S_vt / 100)^1.2 * ...
+                      (0.5 * b_vt / tvr)^0.5)^0.458;
+                      
+    % Subsystems
+    Wprop = 2.575 * (inputs.Weng)^0.922 * inputs.Neng; % Propulsion
+    Wsc = 1.066 * W_current^0.626;                     % Surface Controls
+    
+    % Avionics & Payload groupings
+    W_avio = inputs.Wcam + inputs.Wcomp + inputs.Wgps + inputs.Wbat + inputs.Wserv;
+    Wpay = inputs.N_bal * inputs.Wbal;
+    
+    % Summing structural and total weights
+    Wstruct = Ww + Wf + Wht + Wvt + inputs.Wlg;
+    Wto(i) = Wstruct + Wprop + inputs.Wfs + Wsc + W_avio + Wpay + inputs.Wfuel;
+    
+    % Update guess for next iteration
+    W_current = Wto(i); 
+end
+
+% Optional plot of convergence
+if inputs.makePlots == 1
+    figure('Name','Weight Convergence'); hold on; grid on;
+    plot([inputs.Wguess, Wto], '.-m', 'LineWidth', 1.5, 'MarkerSize', 15);
+    title('Takeoff Weight Convergence');
+    xlabel('Iteration'); ylabel('Weight (lbs)');
+end
+disp('Final calculated total weight (5th iteration):');
+disp(Wto(5));
+
+% --- 2. CENTER OF GRAVITY CALCULATIONS ---
+% Aerodynamic Centers and Leading Edges
+x_wac = inputs.x_wle + 0.25 * inputs.c;
+x_wcg = inputs.x_wle + 0.35 * inputs.c;
+
+x_hac = x_wac + Lh;
+x_hle = x_hac - 0.25 * inputs.c_ht;
+x_hcg = x_hle + 0.35 * inputs.c_ht;
+
+x_vac = x_wac + Lv;
+x_vle = x_vac - 0.25 * c_vt;
+x_vcg = x_vle + 0.35 * c_vt;
+
+% Define Fuel Scenarios
+Wfuel_half = inputs.Wfuel / 2;
+Wfuel_quart = inputs.Wfuel / 4;
+
+% Arrays for CG Math
+W_str_vec = [Ww, Wht, Wvt, Wf, inputs.Wlg, Wprop]; 
+x_str_vec = [x_wcg, x_hcg, x_vcg, inputs.x_fcg, inputs.x_lgcg, inputs.x_propcg];
+
+W_dry_vec = [W_str_vec, inputs.Wcam, inputs.Wcomp, inputs.Wgps, inputs.Wbat, inputs.Wserv, inputs.Weng, inputs.Wfs];
+x_dry_vec = [x_str_vec, inputs.x_cam, inputs.x_comp, inputs.x_gps, inputs.x_bat, inputs.x_serv, inputs.x_eng, inputs.x_fs];
+
+% Calculate Various CG States
+x_cg_str = sum(W_str_vec .* x_str_vec) / sum(W_str_vec);
+x_cg_dry = sum(W_dry_vec .* x_dry_vec) / sum(W_dry_vec);
+
+% 1. Initial CG (Full Payload, Full Fuel)
+W0_vec = [W_dry_vec, Wpay, inputs.Wfuel];
+x0_vec = [x_dry_vec, inputs.x_pay, inputs.x_fuel];
+x_cg_0 = sum(W0_vec .* x0_vec) / sum(W0_vec);
+
+% 2. 1/2 Fuel, Full Payload
+W_fhalf_pay = [W_dry_vec, Wpay, Wfuel_half];
+x_fhalf_pay = [x_dry_vec, inputs.x_pay, inputs.x_fuel];
+x_cg_fhalf_pay = sum(W_fhalf_pay .* x_fhalf_pay) / sum(W_fhalf_pay);
+
+% 3. 1/2 Fuel, No Payload
+W_fhalf_nopay = [W_dry_vec, Wfuel_half];
+x_fhalf_nopay = [x_dry_vec, inputs.x_fuel];
+x_cg_fhalf_nopay = sum(W_fhalf_nopay .* x_fhalf_nopay) / sum(W_fhalf_nopay);
+
+% 4. 1/4 Fuel, No Payload
+W_fquart_nopay = [W_dry_vec, Wfuel_quart];
+x_fquart_nopay = [x_dry_vec, inputs.x_fuel];
+x_cg_fquart_nopay = sum(W_fquart_nopay .* x_fquart_nopay) / sum(W_fquart_nopay);
+
+% 5. Full Fuel, No Payload
+W_f_nopay = [W_dry_vec, inputs.Wfuel];
+x_f_nopay = [x_dry_vec, inputs.x_fuel];
+x_cg_f_nopay = sum(W_f_nopay .* x_f_nopay) / sum(W_f_nopay);
 
 
 %% (10) DISPLAY OPTIONS (directly from inputs)
@@ -58,7 +243,13 @@ makeTable            = inputs.makeTable;
 makePrint_stability  = inputs.makePrint_stability; 
 makePrint_tail_Volume = inputs.makePrint_tail_Volume;
 %% Weight Adelas stuff 
+% Map Adela's newly calculated half-fuel CG to the old variable name 
+% so the stability math below doesn't break!
+x_cg_half = x_cg_fhalf_pay; 
 
+% (And if your code also looks for the old dry or initial CGs, map them too:)
+x_cg_dry = x_cg_f_nopay; % Or whichever dry scenario you need
+x_cg_0   = x_cg_0;
 
 
 
@@ -346,6 +537,34 @@ outputs.CL_LDmax           = CL_LDmax;
 outputs.alpha_LDmax_deg    = alpha_LDmax_deg;
 outputs.alpha_t_LDmax_deg  = alpha_t_LDmax_deg;
 outputs.deltae_LDmax_deg   = deltae_LDmax_deg;
+
+
+%% Adela outputs 
+% Converged Final Weights (5th Iteration)
+outputs.W_total   = Wto(5);      
+outputs.W_struct  = Wstruct;     
+outputs.W_wing    = Ww;          
+outputs.W_fuse    = Wf;          
+outputs.W_htail   = Wht;         
+outputs.W_vtail   = Wvt;         
+
+% Dynamically Sized Geometry
+outputs.S_wing    = Sw;           
+outputs.b_wing    = bw;           
+outputs.S_htail   = Sth;        
+outputs.S_vtail   = S_vt;        
+
+% Center of Gravity Locations [ft from nose]
+outputs.x_cg_str           = x_cg_str;          % CG of empty structure
+outputs.x_cg_dry           = x_cg_dry;          % CG of structure + avionics (Zero Fuel)
+outputs.x_cg_0             = x_cg_0;            % Full payload, full fuel
+outputs.x_cg_fhalf_pay     = x_cg_fhalf_pay;    % Full payload, 1/2 fuel
+outputs.x_cg_fhalf_nopay   = x_cg_fhalf_nopay;  % No payload, 1/2 fuel
+outputs.x_cg_fquart_nopay  = x_cg_fquart_nopay; % No payload, 1/4 fuel
+outputs.x_cg_f_nopay       = x_cg_f_nopay;      % No payload, full fuel
+
+
+
 
 
 %%
