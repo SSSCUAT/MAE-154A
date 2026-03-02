@@ -6,11 +6,11 @@ for i = 1:10
     Wto(i) = W;
 
     %s = 7.12;
-     Sw = 4.3; %W/(.5*.00238*60^2 * 1.2 );
-     Arw = 7.4; %8.68;
-     Sth = 0.2 *Sw;
+    % Sw = 4.3; %W/(.5*.00238*60^2 * 1.2 );
+    % Arw = 7.4; %8.68;
+    % Sth = 0.2 *Sw;
     Sv = .33;
-     bth = 1.5;
+    % bth = 1.5;
     bv = 0.7;
     
     hac = 0.25;
@@ -25,7 +25,7 @@ for i = 1:10
     
     N=6.6; %Ultimate Load Factor (1.5 times limit load factor)(GIVEN)
     Delta=0*pi/180;%Deg %Wing 1/4 chord sweep angle
-     lambdaw =0.4; %Taper Ratio
+    % lambdaw =0.4; %Taper Ratio
     tc=0.12; %Maximum Thickness Ratio (GIVEN)
     Ve=80;%kts %Equivalent Vmax at SL
 
@@ -33,8 +33,8 @@ for i = 1:10
 
 %% Fuselage Weight
 
-     L_fuse = 5; %ft %Fuselage Length
-     W_fuse =.67; %ft %Fuselage Width
+     % L_fuse = 5; %ft %Fuselage Length
+     % W_fuse =.67; %ft %Fuselage Width
      D= 1/24; %ft %Fuselage Max Depth
 
     Wf=200*((W*N/10^5)^0.286*(L_fuse/10)^0.857*((W_fuse+D)/10)*(Ve/100)^0.338)^1.1
