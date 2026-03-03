@@ -34,7 +34,8 @@ inputs.CL_MAX   = 1.5;
 % Fuselage geometry
 inputs.L_fuse = 5.0;             
 inputs.W_fuse = 8/12;            
-inputs.H_fuse = 8/12;            
+inputs.H_fuse = 8/12; 
+inputs.D_fuse = 1/24;
 
 % Propulsion / engine
 inputs.Power = 2.8;              
@@ -51,46 +52,54 @@ inputs.W     = 20;
 % conflict with Adela's dynamic calculations and updated AR_vt (1.5).
 
 % new vertical tail components 
-inputs.S_vt   = 0.30;            
-inputs.b_vt   = 0.4077735426; 
-inputs.c_vt   = 0.35;            
+inputs.c_vt   = 0.5;            
 inputs.tc_v   = 0.12;            
 inputs.xcm_v  = 0.30;            
 inputs.Lam_v  = 0;               
 inputs.V      = linspace(30, 100, 500); 
 
 %% =====================================
-% ADELA'S SIZING & AVIONICS INPUTS
+% ADELA'S INPUTS
 % =====================================
-inputs.Wguess      = 25;      
-inputs.V_stall     = 50;      
-inputs.V_max_kts   = 80;      
-inputs.N_load      = 6.6;     
-inputs.sweep_rad   = 0;       
-inputs.tc          = 0.12;    
 
-% Geometry & Tail Volume Coefficients
-inputs.c           = 0.8;     
-inputs.c_ht        = 0.38;    
-inputs.hac         = 0.25;    
-inputs.V_ht        = 0.5;     
-inputs.V_vt        = 0.05;    
-inputs.AR_ht       = 4.0;     
-inputs.AR_vt       = 1.5;     
+% Horizonatl Tail 
+inputs.c_ht        = 0.38;
+inputs.hac_ht      = 0.25;   % x_ac/c
+inputs.V_ht        = 0.5;    % ht volume coeff
+
+% Vertical Tail
+inputs.hacv        = 0.25;
+inputs.AR_vt       = 1.8;
+inputs.V_vt        = 0.04;   % vt volume coeff
+inputs.Sv          = 0.4;
+inputs.bv          = 0.7;
+
+% Wing 
+inputs.c           = 0.8;
+inputs.hac                = 0.25;
+
+% for Weight code
+inputs.Wguess      = 25;      
+inputs.V_stall     = 50; 
+inputs.N_load      = 6.6;
+inputs.tc          = 0.12;
+inputs.V_max_kts   = 80;           
 
 % Specific Component Weights [lbs]
-inputs.Wlg         = 1.5;     
-inputs.Weng        = 1.76;    
+inputs.Wlg         = 1.5;
+inputs.Wprop       = 0.24;
+inputs.Weng        = 1.76;
 inputs.Neng        = 1;       
 inputs.Wfuel       = 1.5;     
-inputs.Wfs         = 0.25;    
+inputs.Wfs         = 0.25;
+inputs.Wau         = 1.62;
+inputs.Wbal        = 0.66;
+inputs.N_bal       = 3;
 inputs.Wcam        = 0.95;    
 inputs.Wcomp       = 0.10;    
 inputs.Wgps        = 0.07;    
 inputs.Wbat        = 0.44;    
-inputs.Wserv       = 0.06;    
-inputs.Wbal        = 0.66;    
-inputs.N_bal       = 3;       
+inputs.Wserv       = 0.06;           
 
 % Component CG Locations (wrt nose) [ft]
 inputs.x_wle       = 1.0;     % This overrides the old base value

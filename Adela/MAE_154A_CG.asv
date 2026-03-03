@@ -63,8 +63,8 @@ x_hcg = x_hle + 0.35*c_ht; % location of horizontal tail cg wrt nose
 x_vac = x_wac + Lv;         % location of vertical tail AC wrt nose
 
 x_fcg = 0.4*L_fuse; % CG of fuselage (estimated)
-% x_lgcg = 2; % CG of landing gear (estimated)
-% x_propcg = -0.2; % CG of propellar
+x_lgcg = 2; % CG of landing gear (estimated)
+x_propcg = -0.2; % CG of propellar
 
 %% Vertical Tail (contd)
 W_novt = [Ww, Wht, Wf, Wlg, Wprop];  % weight without vertical tail
@@ -106,20 +106,20 @@ Wfuel_half = 0.5*Wfuel;
 Wfuel_quart = 0.25*Wfuel;
 
 %% Locations of avionics wrt to nose
-% x_cam = 0.78;    % location of camera
-% x_comp = 2.5; % location of computer
-% x_gps = 2.5;  % location of GPS
-% x_bat = 1;  % location of battery
-% x_serv = 1.25; % location of servos
-% x_eng = 0.25; % location of engine
-% x_fs = 1.25;   % location of fuel system 
+x_cam = 0.78;    % location of camera
+x_comp = 2.5; % location of computer
+x_gps = 2.5;  % location of GPS
+x_bat = 1;  % location of battery
+x_serv = 1.25; % location of servos
+x_eng = 0.25; % location of engine
+x_fs = 1.25;   % location of fuel system 
 
 %% Locations of payload/fuel wrt nose
 x_1bal = 1.25;
 X_2bal = 1.25;
 x_3bal = 1.25;
-% x_pay = 1.25;  % location of payload
-% x_fuel = 1.25; % loaction of fuel 
+x_pay = 1.25;  % location of payload
+x_fuel = 1.25; % loaction of fuel 
 
 %% Total CG without payload or fuel!!
 Wdry = [W, Wcam, Wcomp, Wgps, Wbat, Wserv, Weng, Wfs]; %weight of structure + avionics

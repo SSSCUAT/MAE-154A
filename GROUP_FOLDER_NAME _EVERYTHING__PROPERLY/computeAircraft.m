@@ -29,6 +29,7 @@ EF       = inputs.EF;
 L_fuse   = inputs.L_fuse;
 W_fuse   = inputs.W_fuse;
 H_fuse   = inputs.H_fuse;
+D_fuse   = inputs.D_fuse;
 
 % REMOVED FROM BASE: 
 % x_wle    = inputs.x_wle;      % -> Moved to Adela's section (updated value)
@@ -38,8 +39,6 @@ H_fuse   = inputs.H_fuse;
 
 
 % --- CHANGES BY JONATHAN ---
-S_vt     = inputs.S_vt; 
-b_vt     = inputs.b_vt; 
 c_vt     = inputs.c_vt; 
 tc_v     = inputs.tc_v;     
 xcm_v    = inputs.xcm_v; 
@@ -49,192 +48,246 @@ V        = inputs.V;
 % REMOVED FROM JONATHAN:
 % AR_vt  = inputs.AR_vt;        % -> Adela updated this to 1.5, kept in her section
 
+% --- ADELA's STUFF ---
 
-% --- NEW STUFF FROM ADELA ---
-% Weights & Sizing Parameters
-Wguess      = inputs.Wguess;
-V_stall     = inputs.V_stall;
-V_max_kts   = inputs.V_max_kts;
-N_load      = inputs.N_load;
-sweep_rad   = inputs.sweep_rad;
-tc          = inputs.tc;
+% Horizonatl Tail 
+c_ht     = inputs.c_ht;
+hac_ht   = inputs.hac_ht;
+V_ht     = inputs.V_ht;
 
-% Geometry & Tail Volume Coefficients
-c           = inputs.c;
-c_ht        = inputs.c_ht;
-hac         = inputs.hac;
-V_ht        = inputs.V_ht;
-V_vt        = inputs.V_vt;
-AR_ht       = inputs.AR_ht;
-AR_vt       = inputs.AR_vt;       % Adela's updated value (1.5)
+% Vertical Tail
+hacv     = inputs.hacv;
+AR_vt    = inputs.AR_vt;
+V_vt     = inputs.V_vt;
+Sv       = inputs.Sv;
+bv       = inputs.bv;
 
-% Specific Component Weights [lbs]
-Wlg         = inputs.Wlg;
-Weng        = inputs.Weng;
-Neng        = inputs.Neng;
-Wfuel       = inputs.Wfuel;
-Wfs         = inputs.Wfs;
-Wcam        = inputs.Wcam;
-Wcomp       = inputs.Wcomp;
-Wgps        = inputs.Wgps;
-Wbat        = inputs.Wbat;
-Wserv       = inputs.Wserv;
-Wbal        = inputs.Wbal;
-N_bal       = inputs.N_bal;
+% Wing
+c          = inputs.c;
+hac        = inputs.hac;
 
-% Component CG Locations [ft]
-x_wle       = inputs.x_wle;       % Adela's updated wing leading edge
-x_fcg       = inputs.x_fcg;
-x_lgcg      = inputs.x_lgcg;
-x_propcg    = inputs.x_propcg;
-x_cam       = inputs.x_cam;
-x_comp      = inputs.x_comp;
-x_gps       = inputs.x_gps;
-x_bat       = inputs.x_bat;
-x_serv      = inputs.x_serv;
-x_eng       = inputs.x_eng;
-x_fs        = inputs.x_fs;
-x_pay       = inputs.x_pay;
-x_fuel      = inputs.x_fuel;
+% Flight / Design Inputs for weight
+Wguess     = inputs.Wguess;     
+V_stall    = inputs.V_stall; 
+N_load     = inputs.N_load;
+tc         = inputs.tc;
+V_max_kts  = inputs.V_max_kts;           
+
+% Specific Component Weights
+Wlg        = inputs.Wlg;
+Wprop      = inputs.Wprop;
+Weng       = inputs.Weng;
+Neng       = inputs.Neng;
+Wfuel      = inputs.Wfuel;
+Wfs        = inputs.Wfs;
+Wau        = inputs.Wau;
+Wbal       = inputs.Wbal;
+N_bal      = inputs.N_bal;
+Wpay       = inputs.Wbal * inputs.N_bal;
+Wcam       = inputs.Wcam;
+Wcomp      = inputs.Wcomp;
+Wgps       = inputs.Wgps;
+Wbat       = inputs.Wbat;
+Wserv      = inputs.Wserv;
+
+% Component CG Locations
+x_wle      = inputs.x_wle;
+x_fcg      = inputs.x_fcg;
+x_lgcg     = inputs.x_lgcg;
+x_propcg   = inputs.x_propcg;
+x_cam      = inputs.x_cam;
+x_comp     = inputs.x_comp;
+x_gps      = inputs.x_gps;
+x_bat      = inputs.x_bat;
+x_serv     = inputs.x_serv;
+x_eng      = inputs.x_eng;
+x_fs       = inputs.x_fs;
+x_pay      = inputs.x_pay;
+x_fuel     = inputs.x_fuel;
 
 % Display Options
 makePlots   = inputs.makePlots;
 
-%% ADELAS MATLAB FILES CG and WEiGHT
+%% ADELAS MATLAB FILES WEiGHT and CG
+
 % =====================================
-% SIZING, WEIGHT ESTIMATION & CG CALCULATION (INSIDE FUNCTION)
+% weight
 % =====================================
 
 % Initialize guess
 W_current = inputs.Wguess;
 Wto = zeros(1, 5); % Locked to 5 iterations as requested
 
-% --- 1. ITERATIVE SIZING LOOP (5 ITERATIONS) ---
-for i = 1:5
-    % Compute wing area and span based on current weight
-    Sw = (W_current * 2) / (inputs.CL_MAX * inputs.rho * (inputs.V_stall^2)); 
-    bw = sqrt(inputs.Arw * Sw);
-    
-    % Horizontal Tail Sizing
-    Lh = 4 * inputs.c; 
-    Sth = (inputs.V_ht * Sw * inputs.c) / Lh;
-    bth = sqrt(inputs.AR_ht * Sth);
-    
-    % Vertical Tail Sizing
-    Lv = 4 * inputs.c; 
-    S_vt = (inputs.V_vt * Sw * inputs.c * bw) / Lv;
-    b_vt = sqrt(inputs.AR_vt * S_vt);
-    c_vt = S_vt / b_vt;
-    
-    % Component Weight Estimation (Nicolai)
-    % Wing
-    Ww = 96.948 * ((W_current * inputs.N_load / 10^5)^0.65 * ...
-                   (inputs.Arw / cos(inputs.sweep_rad))^0.57 * ...
-                   (Sw / 100)^0.61 * ...
-                   ((1 + inputs.lambdaw) / (2 * inputs.tc))^0.36 * ...
-                   (1 + inputs.V_max_kts / 500)^0.5)^0.993;
-                   
-    % Fuselage
-    D_fuse = 1/24;
-    Wf = 200 * ((W_current * inputs.N_load / 10^5)^0.286 * ...
-                (inputs.L_fuse / 10)^0.857 * ...
-                ((inputs.W_fuse + D_fuse) / 10) * ...
-                (inputs.V_max_kts / 100)^0.338)^1.1;
-                
-    % Horizontal Tail
-    hach_local = 0.25;
-    lh_dist = 35/12 + (0.5 - inputs.hac)*inputs.c - (0.5 - hach_local)*inputs.c_ht;
-    thr = inputs.c_ht * inputs.tc * 12; 
-    Wht = 127 * ((W_current * inputs.N_load / 10^5)^0.87 * ...
-                 (Sth / 100)^1.2 * ...
-                 (lh_dist / 10)^0.483 * ...
-                 (bth / thr)^0.5)^0.458;
-                 
-    % Vertical Tail
-    cv = 0.5;
-    tvr = cv * inputs.tc * 12; 
-    Wvt = 2 * 98.5 * ((W_current * inputs.N_load / 10^5)^0.87 * ...
-                      (0.5 * S_vt / 100)^1.2 * ...
-                      (0.5 * b_vt / tvr)^0.5)^0.458;
-                      
-    % Subsystems
-    Wprop = 2.575 * (inputs.Weng)^0.922 * inputs.Neng; % Propulsion
-    Wsc = 1.066 * W_current^0.626;                     % Surface Controls
-    
-    % Avionics & Payload groupings
-    W_avio = inputs.Wcam + inputs.Wcomp + inputs.Wgps + inputs.Wbat + inputs.Wserv;
-    Wpay = inputs.N_bal * inputs.Wbal;
-    
-    % Summing structural and total weights
-    Wstruct = Ww + Wf + Wht + Wvt + inputs.Wlg;
-    Wto(i) = Wstruct + Wprop + inputs.Wfs + Wsc + W_avio + Wpay + inputs.Wfuel;
-    
-    % Update guess for next iteration
-    W_current = Wto(i); 
+Wguess = 20;
+W = Wguess;
+for i = 1:10
+    Wto(i) = W;
+    % Sw = (W*2) / (CL_MAX*rho*(V_stall^2)); % wing area
+    % bw = sqrt(Arw * Sw); % wing span (tip to tip)
+    % Sth = 0.2 *Sw;
+
+% Wing Weight 
+    % lambdaw
+    % tc
+    % V_max_kts
+    Delta       = 0*pi/180;
+    Ww = 96.948*((W*N_load/10^5)^0.65*(Arw/cos(Delta))^0.57*(Sw/100)^0.61*((1+lambdaw)/(2*tc))^0.36*(1+V_max_kts/500)^0.5)^0.993;
+
+% Fuselage Weight
+     % L_fuse
+     % W_fuse
+     % D_fuse
+    Wf=200*((W*N_load/10^5)^0.286*(L_fuse/10)^0.857*((W_fuse+D_fuse)/10)*(V_max_kts/100)^0.338)^1.1;
+
+% Horizontal Tail Weight
+    lh=35 / 12 + (.5 - hac) * c - (.5 - hac_ht) * c_ht; %ft %Distance from Wing MACto Tail MAC
+    thr=c_ht*.12*12; %inches %horizontal tail max root thickness (chord * thick/chord)
+    Wht=127*((W*N_load/10^5)^0.87*(Sth/100)^1.2*(lh/10)^0.483*(bth/thr)^0.5)^0.458;
+
+% Landing Gear Weight
+    % Wlg = 1.5;
+
+% Weight of propellar 
+    % Wprop = 0.24;
+
+% Vertical Tail Weight
+    tvr=c_vt*.12*12; %in %Vertical Tail Max Root Thickness (chord * thick/chord * in/ft)
+    Wvt= (2)* 98.5*((W*N_load/10^5)^0.87*( (.5)* Sv/100)^1.2*( (.5)* bv/tvr)^0.5)^0.458;
+
+% TOTAL STRUCTURAL WEIGHT
+    Wstruct=Ww+Wf+Wht+Wvt+Wlg;
+
+% Total Propulsion Unit (minus Fuel system) Weight
+    % Weng
+    % Neng
+    Wp=2.575*(Weng)^0.922*Neng; %this equation likely over-estimates propulsion unit weight for a small UAV
+
+% Fuel Weight
+    % Wfuel = 1.5; %(lbs)
+
+% Fuel System Weight
+    % Wfs = .25;
+
+% Surface Controls Weight
+    Wsc=1.066*W^0.626;
+
+% Avionics Weight (camera, servos, computer, GPS & Battery)
+    % Wau=1.62;
+
+% Payload Weight
+    % Wpay=2;
+
+%% TOTAL WEIGHT
+    Wto(i)=Wstruct+Wp+Wfs+Wsc+Wpay+Wfuel;
+    W = Wto(i);
+
+    Ww_arr(i) = Ww;
+    Wf_arr(i) = Wf;
+    Wht_arr(i) = Wht;
+    Wvt_arr(i) = Wvt;
+    Wstruct_arr(i) = Wstruct;
+    Wp_arr(i) = Wp;
+    Wau_arr(i) = Wau;
 end
 
-% Optional plot of convergence
-if inputs.makePlots == 1
-    figure('Name','Weight Convergence'); hold on; grid on;
-    plot([inputs.Wguess, Wto], '.-m', 'LineWidth', 1.5, 'MarkerSize', 15);
-    title('Takeoff Weight Convergence');
-    xlabel('Iteration'); ylabel('Weight (lbs)');
-end
-disp('Final calculated total weight (5th iteration):');
-disp(Wto(5));
+% W at elbow!!
+index = 3;            % should choose x=4
+W_total = Wto(index);
 
-% --- 2. CENTER OF GRAVITY CALCULATIONS ---
-% Aerodynamic Centers and Leading Edges
-x_wac = inputs.x_wle + 0.25 * inputs.c;
-x_wcg = inputs.x_wle + 0.35 * inputs.c;
+% Outputs of component weights @ index!!
+Ww = Ww_arr(index);
+Wf = Wf_arr(index);
+Wht = Wht_arr(index);
+Wvt = Wvt_arr(index);
+Wstruct = Wstruct_arr(index);
+Wp = Wp_arr(index);
+Wau = Wau_arr(index);
 
-x_hac = x_wac + Lh;
-x_hle = x_hac - 0.25 * inputs.c_ht;
-x_hcg = x_hle + 0.35 * inputs.c_ht;
+% figure; grid on; hold on
+% plot([Wguess Wto], '.-m')
+% plot(index+1, W_total, 'or', 'MarkerSize', 10, 'LineWidth', 2)  % +1 bc Wguess is the first point
 
+% disp('Final calculated total weight (5th iteration):');
+% disp(Wto(5));
+
+% =====================================
+% Center of Gravity + V-tail calculations
+% =====================================
+
+W = W_total;
+L_ht = 4*c;         % distance from AC of wing to AC of horizontal tail
+Lv = 4*c;         % distance from AC of wing to AC of verticla tail
+
+% locations of LE, AC, and CG of wing, htail, vtail, landing gear, & prop
+x_wac = x_wle + 0.25*c; 
+x_wcg = x_wle + 0.35*c;
+x_hac = x_wac + L_ht;        
+x_hle = x_hac - 0.25*c_ht; 
+x_hcg = x_hle + 0.35*c_ht;
 x_vac = x_wac + Lv;
-x_vle = x_vac - 0.25 * c_vt;
-x_vcg = x_vle + 0.35 * c_vt;
+x_fcg = 0.4*L_fuse; % CG of fuselage (estimated)
 
-% Define Fuel Scenarios
-Wfuel_half = inputs.Wfuel / 2;
-Wfuel_quart = inputs.Wfuel / 4;
+%% Vertical Tail (contd)
+W_novt = [Ww, Wht, Wf, Wlg, Wprop];  % weight without vertical tail
+x_novt = [x_wcg, x_hcg, x_fcg, x_lgcg, x_propcg];  
 
-% Arrays for CG Math
-W_str_vec = [Ww, Wht, Wvt, Wf, inputs.Wlg, Wprop]; 
-x_str_vec = [x_wcg, x_hcg, x_vcg, inputs.x_fcg, inputs.x_lgcg, inputs.x_propcg];
+x_cg_noVT = sum(W_novt.*x_novt) / sum(W_novt); % cg without vertical tail
 
-W_dry_vec = [W_str_vec, inputs.Wcam, inputs.Wcomp, inputs.Wgps, inputs.Wbat, inputs.Wserv, inputs.Weng, inputs.Wfs];
-x_dry_vec = [x_str_vec, inputs.x_cam, inputs.x_comp, inputs.x_gps, inputs.x_bat, inputs.x_serv, inputs.x_eng, inputs.x_fs];
+% Vertical Tail Parameters
+l_vt = x_vac - x_cg_noVT; % distance from cg wihtout vt to ac of vt 
+S_vt = V_vt*((Sw*bw)/l_vt); % VERTICAL TAIL AREA
+b_vt = sqrt(AR_vt*S_vt);    % VERTICAL TAIL span
+c_vt = S_vt / b_vt;           % VERTICAL TAIL chord (NACA 0012)
 
-% Calculate Various CG States
-x_cg_str = sum(W_str_vec .* x_str_vec) / sum(W_str_vec);
-x_cg_dry = sum(W_dry_vec .* x_dry_vec) / sum(W_dry_vec);
+x_vle = x_vac - 0.25*c_vt;  % location of vertical tail leading edge wrt nose
+x_vcg = x_vle + 0.35*c_vt; % location of vertical tail cg
 
-% 1. Initial CG (Full Payload, Full Fuel)
-W0_vec = [W_dry_vec, Wpay, inputs.Wfuel];
-x0_vec = [x_dry_vec, inputs.x_pay, inputs.x_fuel];
-x_cg_0 = sum(W0_vec .* x0_vec) / sum(W0_vec);
+%% Total Center of gravity of structure (empty plane) !!!
+W = [Ww, Wht, Wvt, Wf, Wlg, Wprop];
+x = [x_wcg, x_hcg, x_vcg, x_fcg, x_lgcg, x_propcg];
 
-% 2. 1/2 Fuel, Full Payload
-W_fhalf_pay = [W_dry_vec, Wpay, Wfuel_half];
-x_fhalf_pay = [x_dry_vec, inputs.x_pay, inputs.x_fuel];
-x_cg_fhalf_pay = sum(W_fhalf_pay .* x_fhalf_pay) / sum(W_fhalf_pay);
+x_cg_str = sum(W.*x) / sum(W); % Total structural center of gravity 
 
-% 3. 1/2 Fuel, No Payload
-W_fhalf_nopay = [W_dry_vec, Wfuel_half];
-x_fhalf_nopay = [x_dry_vec, inputs.x_fuel];
-x_cg_fhalf_nopay = sum(W_fhalf_nopay .* x_fhalf_nopay) / sum(W_fhalf_nopay);
+Wpay = N_bal*Wbal; % weight of payload
+Wfuel_half = 0.5*Wfuel;
+Wfuel_quart = 0.25*Wfuel;
 
-% 4. 1/4 Fuel, No Payload
-W_fquart_nopay = [W_dry_vec, Wfuel_quart];
-x_fquart_nopay = [x_dry_vec, inputs.x_fuel];
-x_cg_fquart_nopay = sum(W_fquart_nopay .* x_fquart_nopay) / sum(W_fquart_nopay);
+%% Locations of payload/fuel wrt nose
+x_1bal = 1.25;
+X_2bal = 1.25;
+x_3bal = 1.25;
+% x_pay = 1.25;  % location of payload
+% x_fuel = 1.25; % loaction of fuel 
 
-% 5. Full Fuel, No Payload
-W_f_nopay = [W_dry_vec, inputs.Wfuel];
-x_f_nopay = [x_dry_vec, inputs.x_fuel];
-x_cg_f_nopay = sum(W_f_nopay .* x_f_nopay) / sum(W_f_nopay);
+%% Total CG without payload or fuel!!
+Wdry = [W, Wcam, Wcomp, Wgps, Wbat, Wserv, Weng, Wfs]; %weight of structure + avionics
+x_dry  = [x, x_cam, x_comp, x_gps, x_bat, x_serv, x_eng, x_fs];
+x_cg_dry = sum(Wdry.*x_dry)/sum(Wdry);
+
+%% Initial CG with payload and fuel!!
+W0 = [Wdry, Wpay, Wfuel]; % initial weight w/ payload and fuel
+x_0  = [x_dry, x_pay, x_fuel];
+x_cg_0 = sum(W0.*x_0)/sum(W0);
+
+%% CG with 1/2 fuel and all payload
+W_fhalf_pay = [Wdry, Wpay, Wfuel_half]; % weight w/ payload and 1/2 fuel
+x_fhalf_pay  = [x_dry, x_pay, x_fuel];
+x_cg_fhalf_pay = sum(W_fhalf_pay.*x_fhalf_pay)/sum(W_fhalf_pay);
+
+%% CG with 1/2 fuel and no payload
+W_fhalf_nopay = [Wdry, Wfuel_half]; % weight w/ no payload and 1/2 fuel
+x_fhalf_nopay  = [x_dry, x_fuel];
+x_cg_fhalf_nopay = sum(W_fhalf_nopay.*x_fhalf_nopay)/sum(W_fhalf_nopay);
+
+%% CG with 1/4 fuel and no payload
+W_fquart_nopay = [Wdry, Wfuel_quart]; % weight w/ no payload and 1/4 fuel
+x_fquart_nopay  = [x_dry, x_fuel];
+x_cg_fquart_nopay = sum(W_fquart_nopay.*x_fquart_nopay)/sum(W_fquart_nopay);
+
+%% CG with fuel and no payload
+W_f_nopay = [Wdry, Wfuel]; % weight w/ no payload and all fuel
+x_f_nopay  = [x_dry, x_fuel];
+x_cg_f_nopay = sum(W_f_nopay.*x_f_nopay)/sum(W_f_nopay);
 
 
 %% (10) DISPLAY OPTIONS (directly from inputs)
@@ -343,7 +396,7 @@ q = 0.5*rho.*V.^2;
 M = V./a;
 
 % Required CL for level flight (L=W)
-CL = W ./ (q.*Sw);
+CL = W_total ./ (q.*Sw);
 
 % Solve for alpha, alpha_t (first-pass linear)
 alpha   = CL ./ aw;                         % [rad] wing-only first-pass
@@ -442,7 +495,7 @@ deltae_LDmax_deg  = rad2deg(deltae(idx));
 
 
 %% Stall speed (velocity where CL = CL_MAX)
-V_stall = sqrt(2 * W / (rho * Sw * CL_MAX));
+V_stall = sqrt(2 * W_total / (rho * Sw * CL_MAX));
 
 %% Maximum speed (velocity where Power Required <= Power Available)
 V_max_idx = find(Power_required_hp <= Power_available_hp, 1, 'last');
@@ -453,7 +506,7 @@ else
 end
 
 %% Rate of climb (ft/s)
-ROC = (Power_available_hp - Power_required_hp) * 550 ./ W;  % ft*lbf/s / lb = ft/s
+ROC = (Power_available_hp - Power_required_hp) * 550 ./ W_total;  % ft*lbf/s / lb = ft/s
 
 % Rate of climb at stall
 if ~isnan(V_stall)
@@ -540,8 +593,7 @@ outputs.deltae_LDmax_deg   = deltae_LDmax_deg;
 
 
 %% Adela outputs 
-% Converged Final Weights (5th Iteration)
-outputs.W_total   = Wto(5);      
+outputs.W_total   = Wto(index);      
 outputs.W_struct  = Wstruct;     
 outputs.W_wing    = Ww;          
 outputs.W_fuse    = Wf;          
