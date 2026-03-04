@@ -1,7 +1,7 @@
 clear; clc; close all;
 
 %% =====================================
-% ATMOSPHERE PROPERTIES
+% ATMOSPHERE PROPERTIES ;
 % =====================================
 inputs.rho = 0.0023769;    % Air density [slug/ft^3] at sea level
 inputs.mu  = 3.737e-7;     % Dynamic viscosity of air [slug/(ft*s)]
