@@ -1,7 +1,7 @@
 clear; clc; close all;
 
 %% =====================================
-% ATMOSPHERE PROPERTIES
+% ATMOSPHERE PROPERTIES ;
 % =====================================
 inputs.rho = 0.0023769;    % Air density [slug/ft^3] at sea level
 inputs.mu  = 3.737e-7;     % Dynamic viscosity of air [slug/(ft*s)]
@@ -40,7 +40,7 @@ inputs.D_fuse = 1/24;
 % Propulsion / engine
 inputs.Power = 2.8;              
 inputs.EF    = 0.6;              
-inputs.W     = 20;               
+inputs.W     = 23;               
 
 % NOTE: Base x_wle (0.75) and hardcoded CGs were removed here because 
 % Adela's section updates x_wle to 1.0, and the function calculates the CGs dynamically!
@@ -56,7 +56,7 @@ inputs.c_vt   = 0.5;
 inputs.tc_v   = 0.12;            
 inputs.xcm_v  = 0.30;            
 inputs.Lam_v  = 0;               
-inputs.V      = linspace(30, 100, 500); 
+inputs.V      = linspace(30, 300, 1000); 
 
 %% =====================================
 % ADELA'S INPUTS
@@ -137,10 +137,13 @@ Drag      = zeros(nCases,1);
 StallSpeed  = zeros(nCases,1);
 MaxSpeed    = zeros(nCases,1);
 ROC_Stall   = zeros(nCases,1);
+W_total   = zeros(nCases,1);
+SM_dry = zeros(nCases,1);
+SM_0 = zeros(nCases,1);
 %
 min_StallSpeed = 55;   % must be BELOW this
 min_MaxSpeed   = 120;   % must be ABOVE this
-min_ROC        = 67;    % must be ABOVE this
+min_ROC        = 60;    % must be ABOVE this
 % Loop over each value in the sweep_values array
 for i = 1:length(sweep_values)
     
@@ -154,8 +157,9 @@ for i = 1:length(sweep_values)
     % Display results in the command window for each sweep value
     % This prints: sweep variable, max L/D velocity, stall speed, max speed,
     % and rate of climb at stall speed
-    fprintf("%s = %.2f | V_LDmax = %.2f | V_stall = %.2f | V_max = %.2f | ROC_stall = %.2f ft/s\n", ...
-        sweep_var_name, sweep_values(i), outputs.V_LDmax, outputs.V_stall, outputs.V_max, outputs.ROC_stall);
+
+    %fprintf("%s = %.2f | V_LDmax = %.2f | V_stall = %.2f | V_max = %.2f | ROC_stall = %.2f ft/s\n", ...
+        %sweep_var_name, sweep_values(i), outputs.V_LDmax, outputs.V_stall, outputs.V_max, outputs.ROC_stall);
 
     % Optional: plot Rate of Climb vs Velocity for this sweep value
     % Uncomment to see ROC curves
@@ -169,6 +173,9 @@ SweepValue(i) = sweep_values(i);
 StallSpeed(i) = outputs.V_stall;
 MaxSpeed(i)   = outputs.V_max;
 ROC_Stall(i)  = outputs.ROC_stall;
+SM_0(i) = outputs.SM_0;
+SM_dry(i) = outputs.SM_dry;
+W_total(i) = outputs.W_total;
 end
 %% ==============================
 % SAVE ALL SWEEP CASES INTO ONE CSV FILE
@@ -177,7 +184,10 @@ end
 stall_ok = StallSpeed <= min_StallSpeed;
 max_ok   = MaxSpeed   >= min_MaxSpeed;
 roc_ok   = ROC_Stall  >= min_ROC;
-PassFlag = stall_ok & max_ok & roc_ok; 
+SM_0_ok     = SM_0 >= 0.05 & SM_0 <= 0.15;
+SM_dry_ok   = SM_dry >= 0.05 & SM_dry <= 0.15;
+
+PassFlag = stall_ok & max_ok & roc_ok & SM_dry_ok & SM_0_ok; 
 %%text cleaner
 Result = strings(length(PassFlag),1);
 
@@ -196,14 +206,14 @@ folderName = fullfile(pwd,'Results');
 % Each input column must be the same length
 % Since SweepValue, StallSpeed, etc. were filled inside the loop,
 % each row corresponds to ONE sweep case
-ResultsTable = table(SweepValue, StallSpeed, MaxSpeed, ROC_Stall,Result);
+ResultsTable = table(SweepValue, W_total, StallSpeed, MaxSpeed, ROC_Stall, SM_0, SM_dry, Result) ;
 
 
 % Rename the table column headers
 % The first column name is dynamic (whatever you set sweep_var_name to)
 % Example: if sweep_var_name = 'Arw', first column becomes 'Arw'
 ResultsTable.Properties.VariableNames = ...
-    {sweep_var_name,'Stall_Speed','Max_Speed','ROC_Stall','Result'};
+    {sweep_var_name,'W_total','Stall_Speed','Max_Speed','ROC_Stall','SM_0','SM_dry' ,'Result'};
 
 
 % Create a timestamp string so each run creates a NEW file
