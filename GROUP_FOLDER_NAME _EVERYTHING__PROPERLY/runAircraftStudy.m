@@ -143,7 +143,7 @@ SM_0 = zeros(nCases,1);
 %
 min_StallSpeed = 55;   % must be BELOW this
 min_MaxSpeed   = 120;   % must be ABOVE this
-min_ROC        = 67;    % must be ABOVE this
+min_ROC        = 60;    % must be ABOVE this
 % Loop over each value in the sweep_values array
 for i = 1:length(sweep_values)
     
