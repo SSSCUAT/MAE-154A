@@ -13,8 +13,7 @@ Arw      = inputs.Arw;
 bw       = inputs.bw;
 Sw       = inputs.Sw;
 lambdaw  = inputs.lambdaw;
-Sth      = inputs.Sth;
-bth      = inputs.bth;
+
 lambdath = inputs.lambdath;
 Art      = inputs.Art;
 e        = inputs.e;
@@ -104,6 +103,9 @@ x_eng      = inputs.x_eng;
 x_fs       = inputs.x_fs;
 x_pay      = inputs.x_pay;
 x_fuel     = inputs.x_fuel;
+%% horizontal tail stuff 
+Sth= 0.20*Sw ; 
+bth=sqrt(Sw * Arw) ; 
 
 % Display Options
 makePlots   = inputs.makePlots;
@@ -560,9 +562,9 @@ outputs.hn = hn;
 outputs.hcg_dry = hcg_dry;
 outputs.hcg_half = hcg_half;
 outputs.hcg_0 = hcg_0;
-outputs.SM_dry = SM_dry;
-outputs.SM_half = SM_half;
-outputs.SM_0 = SM_0;
+outputs.SM_dry = SM_dry;    % static margin
+outputs.SM_half = SM_half;  % static margin
+outputs.SM_0 = SM_0;        % static margin 
 outputs.V_stall = V_stall;
 outputs.V_max   = V_max;
 outputs.ROC     = ROC;
