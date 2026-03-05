@@ -11,7 +11,6 @@ a        = inputs.a;
 W        = inputs.W;
 Arw      = inputs.Arw;
 bw       = inputs.bw;
-Sw       = inputs.Sw;
 lambdaw  = inputs.lambdaw;
 
 lambdath = inputs.lambdath;
@@ -91,7 +90,6 @@ Wserv      = inputs.Wserv;
 
 % Component CG Locations
 x_wle      = inputs.x_wle;
-x_fcg      = inputs.x_fcg;
 x_lgcg     = inputs.x_lgcg;
 x_propcg   = inputs.x_propcg;
 x_cam      = inputs.x_cam;
@@ -103,9 +101,12 @@ x_eng      = inputs.x_eng;
 x_fs       = inputs.x_fs;
 x_pay      = inputs.x_pay;
 x_fuel     = inputs.x_fuel;
+c_p_hp_hr  = inputs.c_p_hp_hr;
+
+Sw = bw^2/Arw;
 %% horizontal tail stuff 
 Sth= 0.20*Sw ; 
-bth=sqrt(Sw * Arw) ; 
+bth=sqrt(Sw * Art) ; 
 
 % Display Options
 makePlots   = inputs.makePlots;
@@ -122,10 +123,6 @@ Wto = zeros(1, 5); % Locked to 5 iterations as requested
 
 for i = 1:10
     Wto(i) = W;
-    % Sw = (W*2) / (CL_MAX*rho*(V_stall^2)); % wing area
-    % bw = sqrt(Arw * Sw); % wing span (tip to tip)
-    % Sth = 0.2 *Sw;
-
 % Wing Weight 
     % lambdaw
     % tc
@@ -193,6 +190,11 @@ end
 % W at elbow!!
 index = 3;            % should choose x=4
 W_total = Wto(index);
+
+
+
+%Sw = (W_total*2) / (CL_MAX*rho*(V_stall^2)); % wing area
+%bw = sqrt(Arw * Sw); % wing span (tip to tip)
 
 % Outputs of component weights @ index!!
 Ww = Ww_arr(index);
@@ -480,7 +482,7 @@ LD = L ./ D;
 
 % Power required (hp)
 Power_required_hp = (D.*V) / 550;
-Power_available_hp = Power * ones(size(V));
+Power_available_hp = Power * ones(size(V))*EF;
 %% ========================================================================
 % 11) FIND (L/D)max AND PRINT KEY VALUES
 % ========================================================================
@@ -525,8 +527,31 @@ end
 % S      = wing area (ft^2)
 % Wi     = initial weight (lbf)
 % Wf     = final weight (lbf)
+%% ========================================================================
+% 12) MAXIMUM ENDURANCE (Breguet Equation for Propeller Aircraft)
+% ========================================================================
+% Max endurance occurs where (CL^1.5 / CD) is maximized.
+power_index = (CL.^1.5) ./ CD_total; 
+[~, end_idx] = max(power_index);
 
-%E = (eta_pr * CL^(3/2) / (c_p * CD)) * sqrt(2 * rho * S) * (1/sqrt(Wf) - 1/sqrt(Wi));
+% Grab the CL and CD at that specific flight condition
+CL_endurance = CL(end_idx);
+CD_endurance = CD_total(end_idx);
+
+% Convert c_p from [lb/(hp*hr)] to standard base units [1/ft]
+% 1 hp = 550 ft-lbf/s, 1 hour = 3600 seconds
+c_p_base = c_p_hp_hr / (550 * 3600);
+
+% Define Initial (Wi) and Final (Wf) weights in lbs
+Wi = W_total;
+Wf = W_total - Wfuel;
+
+% Calculate Endurance in seconds
+Endurance_sec = (EF * (CL_endurance^1.5) / (c_p_base * CD_endurance)) ...
+                * sqrt(2 * rho * Sw) * (1/sqrt(Wf) - 1/sqrt(Wi));
+
+% Convert to minutes
+Endurance_min = Endurance_sec / 60;
 
 %% ========================================================================
 % ) OUTPUT STORAGE
@@ -591,7 +616,6 @@ outputs.alpha_LDmax_deg    = alpha_LDmax_deg;
 outputs.alpha_t_LDmax_deg  = alpha_t_LDmax_deg;
 outputs.deltae_LDmax_deg   = deltae_LDmax_deg;
 
-
 %% Adela outputs 
 %outputs.W_total   = Wto(index);%what is this      
 outputs.W_total   = W_total;   
@@ -622,7 +646,7 @@ outputs.x_cg_f_nopay       = x_cg_f_nopay;      % No payload, full fuel
 
 %%
 outputs.ROC_stall = ROC_stall;
-%outputs.E
+outputs.Endurance_min = Endurance_min;
 
 fprintf('Total Weight: %.2f lb\n', outputs.W_total);
 

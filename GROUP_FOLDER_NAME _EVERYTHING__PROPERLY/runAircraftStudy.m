@@ -1,19 +1,13 @@
 clear; clc; close all;
 
-%% =====================================
 % ATMOSPHERE PROPERTIES ;
-% =====================================
 inputs.rho = 0.0023769;    % Air density [slug/ft^3] at sea level
 inputs.mu  = 3.737e-7;     % Dynamic viscosity of air [slug/(ft*s)]
 inputs.a   = 1116.45;      % Speed of sound [ft/s] at sea level
-
-%% =====================================
 % BASE AIRCRAFT GEOMETRY & AERODYNAMIC VALUES
-% =====================================
 % Wing geometry
 inputs.Arw     = 7.4;        
 inputs.bw      = 5.617;      
-inputs.Sw      = 4.264931025; 
 inputs.lambdaw = 0.40;       
 
 % Horizontal tail geometry
@@ -37,7 +31,7 @@ inputs.D_fuse = 1/24;
 
 % Propulsion / engine
 inputs.Power = 2.8;              
-inputs.EF    = 0.6;              
+inputs.EF    = 0.7;              
 inputs.W     = 23;               
 
 % NOTE: Base x_wle (0.75) and hardcoded CGs were removed here because 
@@ -101,7 +95,6 @@ inputs.Wserv       = 0.06;
 
 % Component CG Locations (wrt nose) [ft]
 inputs.x_wle       = 1.0;     % This overrides the old base value
-inputs.x_fcg       = 0.4 * inputs.L_fuse; 
 inputs.x_lgcg      = 2.0;     
 inputs.x_propcg    = -0.2;    
 inputs.x_cam       = 0.78;    
@@ -113,6 +106,8 @@ inputs.x_eng       = 0.25;
 inputs.x_fs        = 1.25;    
 inputs.x_pay       = 1.25;    
 inputs.x_fuel      = 1.25;
+% Endurance 
+inputs.c_p_hp_hr = 2.2;  % Specific fuel consumption [lb/(hp*hr)]
 
 %% =====================================
 % DISPLAY / OUTPUT OPTIONS
@@ -122,125 +117,124 @@ inputs.makeTable            = 0;
 inputs.makePrint_stability  = 0;   
 inputs.makePrint_tail_Volume = 0;
 
-%% VARIABLE SWEEP
 
-sweep_var_name = 'e';               % Name of the field in 'inputs' to vary (e.g., 'W', 'Power', 'EF')
-sweep_values   = [0.5:0.1:1];     % Values to sweep through for that variable
-%% STORAGE ARRAYS (ADD THIS ABOVE YOUR SWEEP LOOP)
+%% =====================================
+% MONTE CARLO DESIGN STUDY
+% =====================================
 
-nCases = length(sweep_values);
+% Number of random aircraft designs to test
+nCases = 5000;
 
-SweepValue  = zeros(nCases,1);
-Drag      = zeros(nCases,1);
+%% VARIABLE RANGES (EDIT THESE WHENEVER YOU WANT TO CHANGE DESIGN SPACE)
+L_fuse_min = 1.0;   % Actual base: 5.0
+L_fuse_max = 10.0;
+
+Arw_min = 1.4;      % Actual base: 7.4
+Arw_max = 12.4;
+
+Art_min = 1.0;      % Actual base: 4.0
+Art_max = 10.0;
+
+bw_min = 1.5;       % Actual base: 5.617
+bw_max = 10.5;
+
+%% STORAGE ARRAYS
+L_fuse_vals = zeros(nCases,1);
+Arw_vals    = zeros(nCases,1);
+Art_vals    = zeros(nCases,1);
+bw_vals     = zeros(nCases,1);
+
+Drag        = zeros(nCases,1);
 StallSpeed  = zeros(nCases,1);
 MaxSpeed    = zeros(nCases,1);
 ROC_Stall   = zeros(nCases,1);
-W_total   = zeros(nCases,1);
-SM_dry = zeros(nCases,1);
-SM_0 = zeros(nCases,1);
-%
-min_StallSpeed = 55;   % must be BELOW this
-min_MaxSpeed   = 120;   % must be ABOVE this
-min_ROC        = 60;    % must be ABOVE this
-% Loop over each value in the sweep_values array
-for i = 1:length(sweep_values)
-    
-    % Dynamically update the chosen input variable in the inputs struct
-    inputs.(sweep_var_name) = sweep_values(i);  
+W_total     = zeros(nCases,1);
+SM_dry      = zeros(nCases,1);
+SM_0        = zeros(nCases,1);
+Endurance_min = zeros(nCases,1);
 
-    % Call the main computational function that computes aerodynamics,
-    % stability, drag, lift, power required, ROC, stall speed, max speed, etc.
+% Performance constraints
+min_StallSpeed = 55;   % must be BELOW this
+min_MaxSpeed   = 120;  % must be ABOVE this
+min_ROC        = 40;   % must be ABOVE this
+
+%% MONTE CARLO LOOP
+% IMPORTANT: Make sure your baseline 'inputs' struct is loaded/defined 
+% BEFORE this loop if computeAircraft needs other constant values!
+
+for i = 1:nCases
+    
+    % Randomly generate aircraft geometry
+    inputs.L_fuse = L_fuse_min + rand*(L_fuse_max - L_fuse_min);
+    inputs.Arw    = Arw_min    + rand*(Arw_max - Arw_min);
+    inputs.Art    = Art_min    + rand*(Art_max - Art_min);
+    inputs.bw     = bw_min     + rand*(bw_max - bw_min);
+
+    % Store the generated design variables
+    L_fuse_vals(i) = inputs.L_fuse;
+    Arw_vals(i)    = inputs.Arw;
+    Art_vals(i)    = inputs.Art;
+    bw_vals(i)     = inputs.bw;
+
+    % Run aircraft model
     outputs = computeAircraft(inputs);
 
-    % Display results in the command window for each sweep value
-    % This prints: sweep variable, max L/D velocity, stall speed, max speed,
-    % and rate of climb at stall speed
-
-    %fprintf("%s = %.2f | V_LDmax = %.2f | V_stall = %.2f | V_max = %.2f | ROC_stall = %.2f ft/s\n", ...
-        %sweep_var_name, sweep_values(i), outputs.V_LDmax, outputs.V_stall, outputs.V_max, outputs.ROC_stall);
-
-    % Optional: plot Rate of Climb vs Velocity for this sweep value
-    % Uncomment to see ROC curves
-    % figure;
-    % plot(outputs.V, outputs.ROC, 'LineWidth', 2);
-    % xlabel('Velocity [ft/s]'); ylabel('Rate of Climb [ft/s]');
-    % title(sprintf('Rate of Climb vs Velocity (%s = %.2f)', sweep_var_name, sweep_values(i)));
-    % grid on;
-    % Store results for this case
-SweepValue(i) = sweep_values(i);
-StallSpeed(i) = outputs.V_stall;
-MaxSpeed(i)   = outputs.V_max;
-ROC_Stall(i)  = outputs.ROC_stall;
-SM_0(i) = outputs.SM_0;
-SM_dry(i) = outputs.SM_dry;
-W_total(i) = outputs.W_total;
+    % Store outputs
+    StallSpeed(i) = outputs.V_stall;
+    MaxSpeed(i)   = outputs.V_max;
+    ROC_Stall(i)  = outputs.ROC_stall;
+    SM_0(i)       = outputs.SM_0;
+    SM_dry(i)     = outputs.SM_dry;
+    W_total(i)    = outputs.W_total;
+    Endurance_min(i) = outputs.Endurance_min;
 end
+
 %% ==============================
-% SAVE ALL SWEEP CASES INTO ONE CSV FILE
+% SAVE ALL CASES INTO ONE CSV FILE
 % ==============================
-% Logical checks (returns true/false arrays)
+
 stall_ok = StallSpeed <= min_StallSpeed;
 max_ok   = MaxSpeed   >= min_MaxSpeed;
 roc_ok   = ROC_Stall  >= min_ROC;
-SM_0_ok     = SM_0 >= 0.04 & SM_0 <= 0.16;
-SM_dry_ok   = SM_dry >= 0.04 & SM_dry <= 0.16;
 
-PassFlag = stall_ok & max_ok & roc_ok & SM_dry_ok & SM_0_ok; 
-%%text cleaner
+SM_0_ok   = SM_0 >= 0.04 & SM_0 <= 0.16;
+SM_dry_ok = SM_dry >= 0.04 & SM_dry <= 0.16;
+
+E_ok = Endurance_min >= 45;
+
+PassFlag = stall_ok & max_ok & roc_ok & SM_dry_ok & SM_0_ok & E_ok;
+
+%% TEXT CLEANER
 Result = strings(length(PassFlag),1);
-
-Result(PassFlag) = "PASS";
+Result(PassFlag)  = "PASS";
 Result(~PassFlag) = "FAIL";
-
-% fullfile(pwd,'Results')
-% - pwd gives the current working directory (where your script is running)
-% - fullfile safely builds a path using correct slashes for your OS
-% Result: ./Results
 
 folderName = fullfile(pwd,'Results');  
 
+% Safely create the Results folder if it doesn't exist
+if ~exist(folderName, 'dir')
+    mkdir(folderName);
+end
 
-% Create a table object
-% Each input column must be the same length
-% Since SweepValue, StallSpeed, etc. were filled inside the loop,
-% each row corresponds to ONE sweep case
-ResultsTable = table(SweepValue, W_total, StallSpeed, MaxSpeed, ROC_Stall, SM_0, SM_dry, Result) ;
+%% CREATE TABLE (DESIGN VARIABLES FIRST)
+ResultsTable = table( ...
+    L_fuse_vals, Arw_vals, Art_vals, bw_vals, SM_0, SM_dry, ...
+    MaxSpeed, ROC_Stall, StallSpeed, Endurance_min, W_total, Result);
 
-
-% Rename the table column headers
-% The first column name is dynamic (whatever you set sweep_var_name to)
-% Example: if sweep_var_name = 'Arw', first column becomes 'Arw'
+% Assign the column headers in the exact same order
 ResultsTable.Properties.VariableNames = ...
-    {sweep_var_name,'W_total','Stall_Speed','Max_Speed','ROC_Stall','SM_0','SM_dry' ,'Result'};
+    {'L_fuse', 'Arw', 'Art', 'bw', 'SM_0', 'SM_dry', ...
+    'Max_Speed', 'ROC_Stall', 'Stall_Speed', 'Endurance_min', 'W_total', 'Result'};
 
+%% CREATE TIMESTAMP
+timestamp = string(datetime("now", 'Format', 'yyyy-MM-dd_HH-mm-ss'));
 
-% Create a timestamp string so each run creates a NEW file
-% now         → current date/time
-% datestr     → converts it to readable string
-% Format: yyyy-mm-dd_HH-MM-SS
-% Example: 2026-02-23_14-42-11
-timestamp = datestr(now,'yyyy-mm-dd_HH-MM-SS');
-
-
-% Build the full filename
-% sprintf builds a formatted string:
-%   Simulation_<SweepVariable>_<Timestamp>.csv
-%
-% Example output:
-%   Simulation_Arw_2026-02-23_14-42-11.csv
+%% FILE NAME
 fileName = fullfile(folderName, ...
-    sprintf('Simulation_%s_%s.csv', sweep_var_name, timestamp));
+    sprintf('MonteCarlo_%s.csv', timestamp));
 
-
-% Write the table to a CSV file
-% writetable automatically:
-%   - Writes column headers
-%   - Writes each row
-%   - Handles formatting
+%% SAVE CSV
 writetable(ResultsTable,fileName);
 
-
-% Display confirmation in command window
-% Helps you verify where it saved
+%% DISPLAY CONFIRMATION
 disp(['All cases saved to: ' fileName])
-%hello
