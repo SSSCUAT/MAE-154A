@@ -197,8 +197,8 @@ stall_ok = StallSpeed <= min_StallSpeed;
 max_ok   = MaxSpeed   >= min_MaxSpeed;
 roc_ok   = ROC_Stall  >= min_ROC;
 
-SM_0_ok   = SM_0 >= 0.04 & SM_0 <= 0.16;
-SM_dry_ok = SM_dry >= 0.04 & SM_dry <= 0.16;
+SM_0_ok   = SM_0 >= 0.04 & SM_0 <= 0.18;
+SM_dry_ok = SM_dry >= 0.04 & SM_dry <= 0.18;
 
 E_ok = Endurance_min >= 45;
 
