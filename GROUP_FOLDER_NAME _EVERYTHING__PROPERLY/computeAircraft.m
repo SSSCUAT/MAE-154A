@@ -3,7 +3,7 @@ function outputs = computeAircraft(inputs)
 %% =====================================
 % UNPACK INPUTS 
 % =====================================
-
+%fix
 % --- BASE AIRCRAFT GEOMETRY & AERO ---
 rho      = inputs.rho;
 mu       = inputs.mu;
