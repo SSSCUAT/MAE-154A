@@ -298,10 +298,9 @@ makePrint_tail_Volume = inputs.makePrint_tail_Volume;
 %% Weight Adelas stuff 
 % Map Adela's newly calculated half-fuel CG to the old variable name 
 % so the stability math below doesn't break!
-x_cg_half = x_cg_fhalf_pay; 
+x_cg_half = x_cg_fhalf_nopay; % half full no payload 
 
 % (And if your code also looks for the old dry or initial CGs, map them too:)
-x_cg_dry = x_cg_f_nopay; % Or whichever dry scenario you need
 x_cg_0   = x_cg_0;
 
 

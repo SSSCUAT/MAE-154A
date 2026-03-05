@@ -13,8 +13,7 @@ Arw      = inputs.Arw;
 bw       = inputs.bw;
 Sw       = inputs.Sw;
 lambdaw  = inputs.lambdaw;
-Sth      = inputs.Sth;
-bth      = inputs.bth;
+
 lambdath = inputs.lambdath;
 Art      = inputs.Art;
 e        = inputs.e;
@@ -104,6 +103,9 @@ x_eng      = inputs.x_eng;
 x_fs       = inputs.x_fs;
 x_pay      = inputs.x_pay;
 x_fuel     = inputs.x_fuel;
+%% horizontal tail stuff 
+Sth= 0.20*Sw ; 
+bth=sqrt(Sw * Arw) ; 
 
 % Display Options
 makePlots   = inputs.makePlots;
@@ -118,8 +120,6 @@ makePlots   = inputs.makePlots;
 W_current = inputs.Wguess;
 Wto = zeros(1, 5); % Locked to 5 iterations as requested
 
-Wguess = 20;
-W = Wguess;
 for i = 1:10
     Wto(i) = W;
     % Sw = (W*2) / (CL_MAX*rho*(V_stall^2)); % wing area
@@ -298,10 +298,9 @@ makePrint_tail_Volume = inputs.makePrint_tail_Volume;
 %% Weight Adelas stuff 
 % Map Adela's newly calculated half-fuel CG to the old variable name 
 % so the stability math below doesn't break!
-x_cg_half = x_cg_fhalf_pay; 
+x_cg_half = x_cg_fhalf_nopay; % half full no payload 
 
 % (And if your code also looks for the old dry or initial CGs, map them too:)
-x_cg_dry = x_cg_f_nopay; % Or whichever dry scenario you need
 x_cg_0   = x_cg_0;
 
 
@@ -562,9 +561,9 @@ outputs.hn = hn;
 outputs.hcg_dry = hcg_dry;
 outputs.hcg_half = hcg_half;
 outputs.hcg_0 = hcg_0;
-outputs.SM_dry = SM_dry;
-outputs.SM_half = SM_half;
-outputs.SM_0 = SM_0;
+outputs.SM_dry = SM_dry;    % static margin
+outputs.SM_half = SM_half;  % static margin
+outputs.SM_0 = SM_0;        % static margin 
 outputs.V_stall = V_stall;
 outputs.V_max   = V_max;
 outputs.ROC     = ROC;
@@ -593,7 +592,8 @@ outputs.deltae_LDmax_deg   = deltae_LDmax_deg;
 
 
 %% Adela outputs 
-outputs.W_total   = Wto(index);      
+%outputs.W_total   = Wto(index);%what is this      
+outputs.W_total   = W_total;   
 outputs.W_struct  = Wstruct;     
 outputs.W_wing    = Ww;          
 outputs.W_fuse    = Wf;          
@@ -623,6 +623,7 @@ outputs.x_cg_f_nopay       = x_cg_f_nopay;      % No payload, full fuel
 outputs.ROC_stall = ROC_stall;
 %outputs.E
 
+fprintf('Total Weight: %.2f lb\n', outputs.W_total);
 
 if makePlots
     % Power
