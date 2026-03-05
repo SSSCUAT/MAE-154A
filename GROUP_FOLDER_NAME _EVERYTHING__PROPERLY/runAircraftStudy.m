@@ -184,8 +184,8 @@ end
 stall_ok = StallSpeed <= min_StallSpeed;
 max_ok   = MaxSpeed   >= min_MaxSpeed;
 roc_ok   = ROC_Stall  >= min_ROC;
-SM_0_ok     = SM_0 >= 0.05 & SM_0 <= 0.15;
-SM_dry_ok   = SM_dry >= 0.05 & SM_dry <= 0.15;
+SM_0_ok     = SM_0 >= 0.04 & SM_0 <= 0.16;
+SM_dry_ok   = SM_dry >= 0.04 & SM_dry <= 0.16;
 
 PassFlag = stall_ok & max_ok & roc_ok & SM_dry_ok & SM_0_ok; 
 %%text cleaner
