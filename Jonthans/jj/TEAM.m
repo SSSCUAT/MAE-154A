@@ -6,19 +6,19 @@
 
 clear; clc; close all;
 
-%% ========================================================================
+% ========================================================================
 % 0) ATMOSPHERE (SEA LEVEL)
 % ========================================================================
 rho = 0.0023769;        % [slug/ft^3]
 mu  = 3.737e-7;         % [slug/(ft*s)]
 a   = 1116.45;          % [ft/s]
 
-%% ========================================================================
+% ========================================================================
 % 1) AIRCRAFT INPUTS (EDIT WHEN DESIGN CHANGES)
 % ========================================================================
 
 % --- Weight / power ---
-W     = 19;             % [lb]
+W_total     = 19;             % [lb]
 Power = 2.8;            % [hp] power available (flat line first-pass)
 
 % --- Wing geometry ---
@@ -44,7 +44,7 @@ xcm_v = 0.30;           % [-]
 Lam_v = 0;              % [rad]   
 
 % --- Aero assumptions ---
-e        = 0.85;        % [-]
+e        = 1;        % [-]
 cla      = 5.73;        % [1/rad]
 downwash = 0.25;        % [-] dε/dα
 tau      = 0.5;         % [-] elevator effectiveness
@@ -66,7 +66,7 @@ H_fuse = 8/12;          % [ft]
 Swet_f = 2*(L_fuse*W_fuse + L_fuse*H_fuse + W_fuse*H_fuse); % [ft^2]
 d_fuse = W_fuse;        % [ft] equiv diameter for fineness ratio
 
-%% ========================================================================
+% ========================================================================
 % 2) PLANFORM GEOMETRY (ROOT/TIP/MAC)
 % ========================================================================
 Crw = (2*Sw)/(bw*(1 + lambdaw));
@@ -82,7 +82,7 @@ fprintf("Wing: Cr=%.4f ft, Ct=%.4f ft, MAC Cw=%.4f ft\n", Crw, Ctw, Cw);
 fprintf("HT:   Cr=%.4f ft, Ct=%.4f ft, MAC Cth=%.4f ft\n", Crth, Ctth, Cth);
 fprintf("Fuse: L=%.2f ft, W=%.3f ft, H=%.3f ft, Swet_f=%.3f ft^2\n", L_fuse, W_fuse, H_fuse, Swet_f);
 
-%% ========================================================================
+% ========================================================================
 % 3) 3D LIFT CURVE SLOPES
 % ========================================================================
 aw = cla / (1 + (cla/(pi*e*Arw)));   % wing 3D slope [1/rad]
@@ -92,7 +92,7 @@ fprintf("\n==================== LIFT SLOPES ====================\n");
 fprintf("aw = %.4f 1/rad\n", aw);
 fprintf("at = %.4f 1/rad\n", at);
 
-%% ========================================================================
+% ========================================================================
 % 4) AC LOCATIONS FROM GEOMETRY (NO GUESSING)
 % Tail root TE flush with fuselage end; tail AC at 0.25*c behind tail LE.
 % ========================================================================
@@ -110,7 +110,7 @@ fprintf("\n==================== REFERENCE LOCATIONS ====================\n");
 fprintf("x_wac = %.4f ft, x_tac = %.4f ft, Lh = %.4f ft\n", x_wac, x_tac, Lh);
 fprintf("h_ac_t = %.4f (tail AC from wing LE / Cw)\n", h_ac_t);
 
-%% ========================================================================
+% ========================================================================
 % 5) NEUTRAL POINT + STATIC MARGIN
 % ========================================================================
 hn = (hacw + h_ac_t*((Sth/Sw)*(at/aw))*(1-downwash)) / (1 + (Sth/Sw)*(at/aw)*(1-downwash));
@@ -129,7 +129,7 @@ fprintf("SM_dry  = %.4f (%.1f%% MAC)\n", SM_dry,  100*SM_dry);
 fprintf("SM_half = %.4f (%.1f%% MAC)\n", SM_half, 100*SM_half);
 fprintf("SM_0    = %.4f (%.1f%% MAC)\n", SM_0,    100*SM_0);
 
-%% ========================================================================
+% ========================================================================
 % 6) TAIL ARM (CG -> TAIL AC) AND TAIL VOLUME VH
 % ========================================================================
 lt_dry  = x_tac - x_cg_dry;
@@ -143,7 +143,7 @@ VH_0    = (Sth*lt_0   )/(Sw*Cw);
 fprintf("\n==================== TAIL ARM & VOLUME ====================\n");
 fprintf("lt_half = %.4f ft, VH_half = %.4f\n", lt_half, VH_half);
 
-%% ========================================================================
+% ========================================================================
 % 7) LONGITUDINAL COEFFICIENTS (KEEP ALL)
 % Use “half fuel + payload” as your design case (you can swap later).
 % ========================================================================
@@ -168,15 +168,15 @@ Cm0 = Cmacw + VH*at*it;
 CLdeltae = at*(Sth/Sw)*tau;
 Cmdeltae = -at*VH*tau;
 
-%% ========================================================================
+% ========================================================================
 % 8) VELOCITY SWEEP
 % ========================================================================
-V = linspace(30, 100, 500);     % [ft/s]
+V = linspace(30, 300, 500);     % [ft/s]
 q = 0.5*rho.*V.^2;
 M = V./a;
 
 % Required CL for level flight (L=W)
-CL = W ./ (q.*Sw);
+CL = W_total ./ (q.*Sw);
 
 % Solve for alpha, alpha_t (first-pass linear)
 alpha   = CL ./ aw;                         % [rad] wing-only first-pass
@@ -193,7 +193,7 @@ deltae = -((Cm0*CLalpha) + (Cmalpha.*CL)) ./ ((CLalpha*Cmdeltae) - (Cmalpha*CLde
 % CLt = CL0 + at*(alpha_t - it) + CLdeltae*deltae
 CLt = CL0 + at*(alpha_t - it) + CLdeltae.*deltae;
 
-%% ========================================================================
+% ========================================================================
 % 9) PARASITE DRAG (Raymer-style build-up) + INCLUDE VERTICAL TAIL
 % ========================================================================
 % Wetted areas (first-pass)
@@ -244,7 +244,7 @@ CDp = ...
     K_f   .*Q_f.*Cf_f.*(Swet_f/Sw) + ...
     CD_misc + CD_LP;
 
-%% ========================================================================
+% ========================================================================
 % 10) INDUCED DRAG + TOTAL DRAG + L/D
 % ========================================================================
 CDi_w = (CLw.^2) ./ (pi*Arw*e);
@@ -264,7 +264,7 @@ LD = L ./ D;
 Power_required_hp = (D.*V) / 550;
 Power_available_hp = Power * ones(size(V));
 
-%% ========================================================================
+% ========================================================================
 % 11) FIND (L/D)max AND PRINT KEY VALUES
 % ========================================================================
 [LDmax, idx] = max(LD);
@@ -275,14 +275,19 @@ alpha_LDmax_deg   = rad2deg(alpha(idx));
 alpha_t_LDmax_deg = rad2deg(alpha_t(idx));
 deltae_LDmax_deg  = rad2deg(deltae(idx));
 
+
+CL_max = 1.5;  
+V_stall = sqrt( (2*W_total) / (rho*Sw*CL_max) );
+
+
 fprintf("\n==================== PERFORMANCE ====================\n");
 fprintf("(L/D)max = %.3f at V = %.2f ft/s\n", LDmax, V_LDmax);
 fprintf("CL(L/Dmax) = %.4f\n", CL_LDmax);
 fprintf("alpha(L/Dmax) = %.2f deg\n", alpha_LDmax_deg);
 fprintf("alpha_t(L/Dmax) = %.2f deg\n", alpha_t_LDmax_deg);
 fprintf("deltae(L/Dmax) = %.2f deg\n", deltae_LDmax_deg);
-
-%% ========================================================================
+fprintf("V_stall = %.2f ft/s\n", V_stall);
+% ========================================================================
 % 12) PLOTS
 % ========================================================================
 figure;
@@ -319,7 +324,7 @@ xlabel('Velocity V [ft/s]'); ylabel('\delta_e [deg]');
 title('Elevator Deflection vs Velocity (Trim from Cm=0)');
 legend('\delta_e','At (L/D)_{max}','Location','best');
 
-%% ========================================================================
+% ========================================================================
 % 13) TABLE OUTPUT (NO Reynolds; INCLUDE deltae + moments)
 % ========================================================================
 alpha_deg   = rad2deg(alpha);
@@ -346,3 +351,178 @@ T = table(V(:), CL(:), alpha_deg(:), alpha_t_deg(:), ...
 disp(T);
 
 %% ============================ END SCRIPT ================================
+
+
+
+
+
+
+
+
+
+
+%% Stability Derivatves 
+%% ========================================================================
+%  MAE 154A - STABILITY DERIVATIVES (SIMPLE + MATCHES YOUR VARIABLE NAMES)
+%  Paste this near the END of YOUR script (after you computed aw, at, VH_half,
+%  lt_half, CL0, CLalpha, Cm0, Cmalpha, CLdeltae, Cmdeltae, etc.)
+%
+%  Uses YOUR variables:
+%   Sw, bw, Cw, e, cla, aw, at, downwash, CL0, CLalpha, Cm0, Cmalpha,
+%   CLdeltae, Cmdeltae, VH_half, lt_half, x_cg_half, x_wle, H_fuse, CDp, idx
+%
+%  VT assumptions requested:
+%   - NACA 0012 (handled via thickness in drag; for linear slopes we use cla)
+%   - S_vt = 0.08 * Sw
+%   - VT has NO taper (lambda_vt = 1.0)
+%   - VT trailing edge flush with END of plane at x = 4 ft from nose
+%
+%  First-pass aero assumptions:
+%   eta_t = eta_v = 1, sidewash = 1, no ailerons
+% ========================================================================
+
+%% ------------------ 0) SETTINGS (FIRST-PASS) -----------------------------
+eta_t    = 1.0;        % HT dynamic pressure ratio
+eta_v    = 1.0;        % VT dynamic pressure ratio
+sidewash = 1.0;        % (1 + dσ/dβ) ~ 1 first-pass
+tau_r    = 0.5;        % rudder effectiveness (like your tau)
+x_end    = 4.0;        % [ft] end of plane from nose (YOU SAID 4 ft)
+
+lambda_vt = 1.0;       % no taper
+hacv      = 0.25;      % VT AC at 0.25 chord
+
+% Use your design CG case
+x_cg = x_cg_half;      % [ft]
+VH   = VH_half;        % [-]
+lt   = lt_half;        % [ft]
+c    = Cw;             % [ft]
+b    = bw;             % [ft]
+S    = Sw;             % [ft^2]
+
+%% ------------------ 1) VERTICAL TAIL GEOMETRY ----------------------------
+% Your requirement: S_vt = 8% of wing area
+% (overwrite any older S_vt you had so it matches requirement)
+S_vt = 0.08*Sw;
+
+% Use your AR_vt (already in your script)
+% (If you forgot to define it, uncomment the next line)
+% AR_vt = 1.8;
+
+% VT geometry from S_vt and AR_vt
+b_vt  = sqrt(S_vt*AR_vt);                          % [ft] VT span/height
+Cr_vt = (2*S_vt)/(b_vt*(1 + lambda_vt));           % [ft] VT root chord
+
+% VT AC location with TE flush at x_end:
+% x_vac = x_end - (1 - hacv)*Cr_vt = x_end - 0.75*Cr_vt
+x_vac = x_end - (1 - hacv)*Cr_vt;                  % [ft]
+
+% Moment arm CG -> VT AC
+lv = x_vac - x_cg;                                 % [ft]
+
+% Vertical tail volume coefficient
+Vv = (S_vt*lv)/(Sw*bw);                             % [-]
+
+% VT 3D lift slope (same formula style as your aw/at)
+av = cla / (1 + (cla/(pi*e*AR_vt)));               % [1/rad]
+
+% VT vertical offset from CG (first-pass: sits on top of fuselage)
+% You already have H_fuse in your script.
+zv = (H_fuse/2) + (b_vt/2);                        % [ft]
+
+%% ------------------ 2) CD0 FOR Cn_r APPROX (OPTIONAL) --------------------
+% Some approximations include -(CD0/4). We'll use parasite drag at your L/Dmax
+% point (idx) as "CD0" (first-pass).
+CD0 = 0;
+if exist('CDp','var') && exist('idx','var') && idx>=1 && idx<=length(CDp)
+    CD0 = CDp(idx);
+end
+
+%% ========================================================================
+% 3) LONGITUDINAL DERIVATIVES
+% You already compute:
+%   CL0, CLalpha, Cm0, Cmalpha, CLdeltae, Cmdeltae
+% Here we add: CL_q, CL_adot, Cm_q, Cm_adot
+% ========================================================================
+CL_q    =  2*eta_t*VH*at;
+CL_adot =  2*eta_t*VH*at*downwash;      % uses dε/dα
+
+Cm_q    = -2*eta_t*(lt/c)*VH*at;
+Cm_adot = (lt/c)*(-2*eta_t*VH*at*downwash);
+
+%% ========================================================================
+% 4) LATERAL-DIRECTIONAL DERIVATIVES (VT-dominated first-pass)
+% ========================================================================
+CYbeta = -eta_v*(S_vt/Sw)*av*sidewash;
+Cnbeta =  eta_v*Vv*av*sidewash;
+Clbeta = -eta_v*(zv/bw)*(S_vt/Sw)*av*sidewash;
+
+Clp = -aw/6;
+
+CYr =  2*eta_v*Vv*av;
+CYp = -(8/(3*pi))*eta_v*((b_vt*S_vt)/(bw*Sw))*av;
+
+Clr = (CL0/4) + 2*eta_v*(zv/bw)*Vv*av;
+Cnr = -(CD0/4) - 2*eta_v*(lv/bw)*Vv*av;
+
+Cnp = 0;  % set 0 first-pass (needs better model)
+
+%% ========================================================================
+% 5) CONTROL DERIVATIVES
+% No ailerons => set aileron derivatives to 0.
+% Rudder => first-pass using VT
+% ========================================================================
+CYda = 0;  Clda = 0;  Cnda = 0;
+
+CYdr =  eta_v*(S_vt/Sw)*av*tau_r;
+Cndr = -eta_v*Vv*av*tau_r;
+Cldr = -eta_v*(zv/bw)*(S_vt/Sw)*av*tau_r;
+
+%% ========================================================================
+% 6) PRINT CLEAN OUTPUT
+% (All variables printed are defined in THIS block or already in your script)
+% ========================================================================
+fprintf("\n==================== STABILITY DERIVATIVES (MATCHING YOUR CODE) ====================\n");
+
+fprintf("\n--- Longitudinal (you have + new dynamics) ---\n");
+fprintf("CL0        = %+ .6f\n", CL0);
+fprintf("CLalpha    = %+ .6f\n", CLalpha);
+fprintf("CLdeltae   = %+ .6f\n", CLdeltae);
+fprintf("Cm0        = %+ .6f\n", Cm0);
+fprintf("Cmalpha    = %+ .6f\n", Cmalpha);
+fprintf("Cmdeltae   = %+ .6f\n", Cmdeltae);
+
+fprintf("CL_q       = %+ .6f\n", CL_q);
+fprintf("CL_adot    = %+ .6f\n", CL_adot);
+fprintf("Cm_q       = %+ .6f\n", Cm_q);
+fprintf("Cm_adot    = %+ .6f\n", Cm_adot);
+
+fprintf("\n--- Lateral/Directional (first-pass VT dominated) ---\n");
+fprintf("CYbeta     = %+ .6f\n", CYbeta);
+fprintf("Clbeta     = %+ .6f\n", Clbeta);
+fprintf("Cnbeta     = %+ .6f\n", Cnbeta);
+
+fprintf("Clp        = %+ .6f\n", Clp);
+fprintf("CYp        = %+ .6f\n", CYp);
+fprintf("CYr        = %+ .6f\n", CYr);
+fprintf("Clr        = %+ .6f\n", Clr);
+fprintf("Cnr        = %+ .6f   (used CD0 = %.6f)\n", Cnr, CD0);
+fprintf("Cnp        = %+ .6f   (set 0 first-pass)\n", Cnp);
+
+fprintf("\n--- Controls (no ailerons; rudder included) ---\n");
+fprintf("CYda       = %+ .6f (no ailerons)\n", CYda);
+fprintf("Clda       = %+ .6f (no ailerons)\n", Clda);
+fprintf("Cnda       = %+ .6f (no ailerons)\n", Cnda);
+
+fprintf("CYdr       = %+ .6f\n", CYdr);
+fprintf("Cldr       = %+ .6f\n", Cldr);
+fprintf("Cndr       = %+ .6f\n", Cndr);
+
+%% ========================================================================
+% 7) WHAT YOU ARE STILL MISSING (WITH YOUR CURRENT INFO)
+% ========================================================================
+fprintf("\n==================== STILL MISSING / NOT WELL-DEFINED YET ====================\n");
+fprintf("1) Aileron derivatives: CYda, Clda, Cnda (we set them to 0 since you said no ailerons).\n");
+fprintf("2) Better Cnp (we set to 0 first-pass; needs more detailed lateral model).\n");
+fprintf("3) Xu, Zu, Mu (speed derivatives) unless you model thrust vs speed and CD vs speed at trim.\n");
+fprintf("4) Inertias Ix, Iy, Iz, Ixz (needed for full state-space / simulator dynamics).\n");
+fprintf("5) Exact sign convention check vs your lecture table (depends on whether your class uses CZ or CL sign).\n");
