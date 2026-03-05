@@ -13,8 +13,7 @@ Arw      = inputs.Arw;
 bw       = inputs.bw;
 Sw       = inputs.Sw;
 lambdaw  = inputs.lambdaw;
-Sth      = inputs.Sth;
-bth      = inputs.bth;
+
 lambdath = inputs.lambdath;
 Art      = inputs.Art;
 e        = inputs.e;
@@ -104,6 +103,9 @@ x_eng      = inputs.x_eng;
 x_fs       = inputs.x_fs;
 x_pay      = inputs.x_pay;
 x_fuel     = inputs.x_fuel;
+%% horizontal tail stuff 
+Sth= 0.20*Sw ; 
+bth=sqrt(Sw * Arw) ; 
 
 % Display Options
 makePlots   = inputs.makePlots;
