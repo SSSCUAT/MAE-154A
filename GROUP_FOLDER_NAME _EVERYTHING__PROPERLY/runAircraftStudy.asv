@@ -125,7 +125,7 @@ inputs.makePrint_tail_Volume = 0;
 %% VARIABLE SWEEP
 
 sweep_var_name = 'e';               % Name of the field in 'inputs' to vary (e.g., 'W', 'Power', 'EF')
-sweep_values   = [0.5:0.1:1];     % Values to sweep through for that variable
+sweep_values   = [0.5:0.01:1];     % Values to sweep through for that variable
 %% STORAGE ARRAYS (ADD THIS ABOVE YOUR SWEEP LOOP)
 
 nCases = length(sweep_values);
