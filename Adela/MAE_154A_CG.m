@@ -20,7 +20,7 @@ Arw = 7.4;         % aspect ratio
 Sw = 4.26; % wing area
 bw = 5.6; % wing span (tip to tip)
 c = Sw/bw;          % chord length 
-c = 0.8; 
+%c = 0.8; 
 
 %% Horizontal tail parameters
 lambdaw =0.4;
