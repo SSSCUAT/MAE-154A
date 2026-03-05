@@ -55,9 +55,9 @@ it = 3*pi/180;          % [rad]
 
 % --- Locations (from nose) ---
 x_wle     = 1.0;        % [ft] wing leading edge location
-x_cg_dry  = 1.5339;     % [ft]
+x_cg_dry  = 1.5347;     % [ft]
 x_cg_half = 1.5103;     % [ft] 
-x_cg_0    = 1.4496;     % [ft]
+x_cg_0    = 1.4502;     % [ft]
 
 % --- Fuselage (box: 8in x 8in x 5ft) ---
 L_fuse = 5.0;           % [ft]
