@@ -61,6 +61,7 @@ Sv       = inputs.Sv;
 bv       = inputs.bv;
 
 % Wing
+c          = inputs.c;
 hac        = inputs.hac;
 
 % Flight / Design Inputs for weight
@@ -106,15 +107,16 @@ Sw = bw^2/Arw;
 
 %% horizontal tail stuff 
 Sth= 0.20*Sw ; 
-bth=sqrt(Sth * Art) ; 
+bth=sqrt(Sw * Art) ; 
 
 Crw = (2*Sw)/(bw*(1 + lambdaw));
+Ctw = lambdaw * Crw;
 Cw  = (2/3) * Crw * ((1 + lambdaw + lambdaw^2)/(1 + lambdaw)); % wing MAC
 
 Crth = (2*Sth)/(bth*(1 + lambdath));
+Ctth = lambdath * Crth;
 Cth  = (2/3) * Crth * ((1 + lambdath + lambdath^2)/(1 + lambdath)); % tail MAC
-c=Cw ; 
-c_ht= Cth ; 
+
 % Display Options
 makePlots   = inputs.makePlots;
 
@@ -224,28 +226,9 @@ Wau = Wau_arr(index);
 % =====================================
 
 W = W_total;
-
-%% Horizontal Tail stuff 
-
-lambdaw =0.4;
-lambdath = 0.5;
-Sth = 0.2 * Sw;
-bth = sqrt(Art*Sth); % Horizontal tail wing span
-
-Crw = (2*Sw)/(bw*(1 + lambdaw));
-Ctw = lambdaw * Crw;
-Cw  = (2/3) * Crw * ((1 + lambdaw + lambdaw^2)/(1 + lambdaw)); % wing MAC
-
-Crth = (2*Sth)/(bth*(1 + lambdath));
-
-hacw = 0.25;   % wing AC at 0.25 MAC
-hact = 0.25;   % tail AC at 0.25 chord (root chord ref)
-
-x_wac = x_wle + hacw*Cw;                 % wing AC from nose [ft]
-x_tac = L_fuse - (1 - hact)*Crth;        % tail AC from nose [ft]
-L_ht   = x_tac - x_wac;                   % wing AC -> tail AC [ft]
-
+L_ht = 4*c;         % distance from AC of wing to AC of horizontal tail
 Lv = 4*c;         % distance from AC of wing to AC of verticla tail
+
 
 % locations of LE, AC, and CG of wing, htail, vtail, landing gear, & prop
 x_wac = x_wle + 0.25*c; 
