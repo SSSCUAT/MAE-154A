@@ -5,37 +5,40 @@ W = Wguess;
 for i = 1:10
     Wto(i) = W;
 
-    % Arw = 7.4;         % aspect ratio
-    % Sw = (W*2) / (CL_MAX*rho*(V_stall^2)); % wing area
-    % bw = sqrt(Arw * Sw); % wing span (tip to tip)
-    % Sth = 0.2 *Sw;
-    % bth = 1.5;
-    % S_vt = .41;
-    % b_vt = 0.7;
-    % c_vt = .5;
+    Arw = 7.4;         % aspect ratio]
+    CL_MAX = 1.5;
+    rho = 0.0023769;
+    V_stall = 55;
+    Sw = (W*2) / (CL_MAX*rho*(V_stall^2)); % wing area
+    bw = sqrt(Arw * Sw); % wing span (tip to tip)
+    Sth = 0.2 *Sw;
+    bth = 1.5;
+    S_vt = .41;
+    b_vt = 0.7;
+    c_vt = .5;
 
-    % c_ht = 0.38;
-    % hac_ht = 0.25;
-    % hac_vt = 0.25;
-    % c = 0.8;
-    % hac = 0.25;
+    c_ht = 0.38;
+    hac_ht = 0.25;
+    hac_vt = 0.25;
+    c = 0.8;
+    hac = 0.25;
     
 % Component Weight Estimates- Nicolai
 % Wing Weight 
     
-    % N=6.6; %Ultimate Load Factor (1.5 times limit load factor)(GIVEN)
+    N=6.6; %Ultimate Load Factor (1.5 times limit load factor)(GIVEN)
     Delta=0*pi/180;%Deg %Wing 1/4 chord sweep angle
-    % lambdaw =0.4; %Taper Ratio
-    % tc=0.12; %Maximum Thickness Ratio (GIVEN)
-    % V_max_kts=80;%kts %Equivalent Vmax at SL
+    lambdaw =0.4; %Taper Ratio
+    tc=0.12; %Maximum Thickness Ratio (GIVEN)
+    V_max_kts=80;%kts %Equivalent Vmax at SL
 
     Ww = 96.948*((W*N/10^5)^0.65*(Arw/cos(Delta))^0.57*(Sw/100)^0.61*((1+lambdaw)/(2*tc))^0.36*(1+V_max_kts/500)^0.5)^0.993;
 
 %% Fuselage Weight
 
-     % L_fuse = 5; %ft %Fuselage Length
-     % W_fuse =.67; %ft %Fuselage Width
-     % D_fuse = 1/24; %ft %Fuselage Max Depth
+     L_fuse = 5; %ft %Fuselage Length
+     W_fuse =.67; %ft %Fuselage Width
+     D_fuse = 1/24; %ft %Fuselage Max Depth
 
     Wf=200*((W*N/10^5)^0.286*(L_fuse/10)^0.857*((W_fuse+D_fuse)/10)*(V_max_kts/100)^0.338)^1.1;
 
@@ -48,14 +51,14 @@ for i = 1:10
 
 %% Landing Gear Weight
 
-%Llg=18; %in    %Length of Main Landing Gear Strut
-%Nland=2; %Ultimate Load Factor at Wland
-%Wlg=0.054*(Llg)^0.501*(W*Nland)^0.684
+% Llg=18; %in    %Length of Main Landing Gear Strut
+% Nland=2; %Ultimate Load Factor at Wland
+% Wlg=0.054*(Llg)^0.501*(W*Nland)^0.684
 
 %don't need niccolai if we have specific landing gear
-    % Wlg = 1.5;
+    Wlg = 1.5;
 %% Weight of propellar 
-    % Wprop = 0.24;
+    Wprop = 0.24;
 
 %% Vertical Tail Weight
 
@@ -68,14 +71,14 @@ for i = 1:10
 
 %% Total Propulsion Unit (minus Fuel system) Weight
 
-    % Weng=1.76; %(lbs) %Bare Engine Weight
-    % Neng=1; %# Engines
+    Weng=1.76; %(lbs) %Bare Engine Weight
+    Neng=1; %# Engines
 
     Wp=2.575*(Weng)^0.922*Neng; %this equation likely over-estimates propulsion unit weight for a small UAV
 
 %% Fuel Weight
 
-    % Wfuel = 1.5; %(lbs)
+     Wfuel = 1.5; %(lbs)
 
 %% Fuel System Weight
 
@@ -86,14 +89,14 @@ for i = 1:10
 %Wfs=2.49*((Fg)^0.6*(1/(1+tankint))^0.3*Nt^0.2*Neng^0.13)^1.21
 
 % specific fuel system weights (fuel tanks, lines) likely can be found for your aircraft, if so, use those actual values instead of the niccolai equations.
-    % Wfs = .25;
+    Wfs = .25;
 %% Surface Controls Weight
 
     Wsc=1.066*W^0.626;
 %% Avionics Weight - use weights of specific sensors you choose (camera, servos, computer, GPS & Battery)
-    % Wau=1.62;
+     Wau=1.62;
 %% Payload Weight
-    % Wpay=2;
+     Wpay=2;
 %% TOTAL WEIGHT
     Wto(i)=Wstruct+Wp+Wfs+Wsc+Wpay+Wfuel;
     W = Wto(i);
