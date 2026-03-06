@@ -122,7 +122,7 @@ inputs.makePrint_tail_Volume = 0;
 % =====================================
 
 % Number of random aircraft designs to test
-nCases = 10000;
+nCases = 1;
 
 %% VARIABLE RANGES (EDIT THESE WHENEVER YOU WANT TO CHANGE DESIGN SPACE)
 L_fuse_min = 3.5;   % Actual base: 5.0
@@ -166,12 +166,12 @@ min_ROC        = 40;   % must be ABOVE this
 
 for i = 1:nCases
     
-    % Randomly generate aircraft geometry
-    inputs.L_fuse = L_fuse_min + rand*(L_fuse_max - L_fuse_min);
-    inputs.Arw    = Arw_min    + rand*(Arw_max - Arw_min);
-    inputs.Art    = Art_min    + rand*(Art_max - Art_min);
-    inputs.bw     = bw_min     + rand*(bw_max - bw_min);
-    inputs.x_wle  = x_wle_min  + rand*(x_wle_max - x_wle_min);
+    % HARDCODED IDEAL AIRCRAFT (Comment out the rand equations)
+    inputs.L_fuse = 3.7368;  % L_fuse_min + rand*(L_fuse_max - L_fuse_min);
+    inputs.Arw    = 6.0656;  % Arw_min    + rand*(Arw_max - Arw_min);
+    inputs.Art    = 3.3521;  % Art_min    + rand*(Art_max - Art_min);
+    inputs.bw     = 4.6888;  % bw_min     + rand*(bw_max - bw_min);
+    inputs.x_wle  = 1.1334;  % x_wle_min  + rand*(x_wle_max - x_wle_min);
 
     % Store the generated design variables
     L_fuse_vals(i) = inputs.L_fuse;
