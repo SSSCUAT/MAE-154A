@@ -125,20 +125,15 @@ inputs.makePrint_tail_Volume = 0;
 nCases = 1;
 
 %% VARIABLE RANGES (EDIT THESE WHENEVER YOU WANT TO CHANGE DESIGN SPACE)
-L_fuse_min = 3.5;   % Actual base: 5.0
-L_fuse_max = 6;
 
-Arw_min = 6;      % Actual base: 7.4
-Arw_max = 10;
+%% VARIABLE RANGES (RUN 3 - The Best Data)
+L_fuse_min = 3.5127;   L_fuse_max = 4.2237;
+Arw_min    = 6.1724;   Arw_max    = 6.5324;
+Art_min    = 3.1008;   Art_max    = 4.7762;   % <-- Tightened from 3.0-5.0
+bw_min     = 4.6708;   bw_max     = 4.8925;   % <-- Fixed! Tightened from 1.5-10.5
+x_wle_min  = 1.0153;   x_wle_max  = 1.0707;   % <-- Tightened from 0.75-1.
 
-Art_min = 3.4;      % Actual base: 4.0
-Art_max = 4.4;
 
-bw_min = 5;       % Actual base: 5.617
-bw_max = 7;
-
-x_wle_min = 0.9;
-x_wle_max = 1.2;
 %% STORAGE ARRAYS
 L_fuse_vals = zeros(nCases,1);
 Arw_vals    = zeros(nCases,1);
@@ -167,11 +162,11 @@ min_ROC        = 40;   % must be ABOVE this
 for i = 1:nCases
     
     % HARDCODED IDEAL AIRCRAFT (Comment out the rand equations)
-    inputs.L_fuse = 3.7368;  % L_fuse_min + rand*(L_fuse_max - L_fuse_min);
-    inputs.Arw    = 6.0656;  % Arw_min    + rand*(Arw_max - Arw_min);
-    inputs.Art    = 3.3521;  % Art_min    + rand*(Art_max - Art_min);
-    inputs.bw     = 4.6888;  % bw_min     + rand*(bw_max - bw_min);
-    inputs.x_wle  = 1.1334;  % x_wle_min  + rand*(x_wle_max - x_wle_min);
+    inputs.L_fuse = 3.6179;  %L_fuse_min + rand*(L_fuse_max - L_fuse_min);
+    inputs.Arw    =  6.3266 ;%Arw_min    + rand*(Arw_max - Arw_min);
+    inputs.Art    = 3.1022;  %Art_min    + rand*(Art_max - Art_min);
+    inputs.bw     = 4.6801 ;  %bw_min     + rand*(bw_max - bw_min);
+    inputs.x_wle  = 1.0312 ;  %x_wle_min  + rand*(x_wle_max - x_wle_min);
 
     % Store the generated design variables
     L_fuse_vals(i) = inputs.L_fuse;
