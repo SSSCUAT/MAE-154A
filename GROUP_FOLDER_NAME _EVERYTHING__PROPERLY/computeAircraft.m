@@ -119,84 +119,73 @@ c_ht= Cth ;
 makePlots   = inputs.makePlots;
 
 %% ADELAS MATLAB FILES WEiGHT and CG
-
 % =====================================
 % weight
 % =====================================
-
 % Initialize guess
 W_current = inputs.Wguess;
 Wto = zeros(1, 5); % Locked to 5 iterations as requested
-
 for i = 1:10
-    Wto(i) = W;
-% Wing Weight 
-    % lambdaw
-    % tc
-    % V_max_kts
-    Delta       = 0*pi/180;
-    Ww = 96.948*((W*N_load/10^5)^0.65*(Arw/cos(Delta))^0.57*(Sw/100)^0.61*((1+lambdaw)/(2*tc))^0.36*(1+V_max_kts/500)^0.5)^0.993;
-
+Wto(i) = W;
+% Wing Weight
+% lambdaw
+% tc
+% V_max_kts
+Delta = 0*pi/180;
+Ww = 96.948*((W*N_load/10^5)^0.65*(Arw/cos(Delta))^0.57*(Sw/100)^0.61*((1+lambdaw)/(2*tc))^0.36*(1+V_max_kts/500)^0.5)^0.993;
 % Fuselage Weight
-     % L_fuse
-     % W_fuse
-     % D_fuse
-    Wf=200*((W*N_load/10^5)^0.286*(L_fuse/10)^0.857*((W_fuse+D_fuse)/10)*(V_max_kts/100)^0.338)^1.1;
-
+% L_fuse
+% W_fuse
+% D_fuse
+Wf=200*((W*N_load/10^5)^0.286*(L_fuse/10)^0.857*((W_fuse+D_fuse)/10)*(V_max_kts/100)^0.338)^1.1;
 % Horizontal Tail Weight
-    lh=35 / 12 + (.5 - hac) * c - (.5 - hac_ht) * c_ht; %ft %Distance from Wing MACto Tail MAC
-    thr=c_ht*.12*12; %inches %horizontal tail max root thickness (chord * thick/chord)
-    Wht=127*((W*N_load/10^5)^0.87*(Sth/100)^1.2*(lh/10)^0.483*(bth/thr)^0.5)^0.458;
-
+lh=35 / 12 + (.5 - hac) * c - (.5 - hac_ht) * c_ht; %ft %Distance from Wing MACto Tail MAC
+thr=c_ht*.12*12; %inches %horizontal tail max root thickness (chord * thick/chord)
+Wht=127*((W*N_load/10^5)^0.87*(Sth/100)^1.2*(lh/10)^0.483*(bth/thr)^0.5)^0.458;
 % Landing Gear Weight
-    % Wlg = 1.5;
-
-% Weight of propellar 
-    % Wprop = 0.24;
-
+% Wlg = 1.5;
+% Weight of propellar
+% Wprop = 0.24;
 % Vertical Tail Weight
-    tvr=c_vt*.12*12; %in %Vertical Tail Max Root Thickness (chord * thick/chord * in/ft)
-    Wvt= (2)* 98.5*((W*N_load/10^5)^0.87*( (.5)* Sv/100)^1.2*( (.5)* bv/tvr)^0.5)^0.458;
-
+tvr=c_vt*.12*12; %in %Vertical Tail Max Root Thickness (chord * thick/chord * in/ft)
+Wvt= (2)* 98.5*((W*N_load/10^5)^0.87*( (.5)* Sv/100)^1.2*( (.5)* bv/tvr)^0.5)^0.458;
 % TOTAL STRUCTURAL WEIGHT
-    Wstruct=Ww+Wf+Wht+Wvt+Wlg;
-
+Wstruct=Ww+Wf+Wht+Wvt+Wlg;
 % Total Propulsion Unit (minus Fuel system) Weight
-    % Weng
-    % Neng
-    Wp=2.575*(Weng)^0.922*Neng; %this equation likely over-estimates propulsion unit weight for a small UAV
-
+% Weng
+% Neng
+Wp=2.575*(Weng)^0.922*Neng; %this equation likely over-estimates propulsion unit weight for a small UAV
 % Fuel Weight
-    % Wfuel = 1.5; %(lbs)
-
+% Wfuel = 1.5; %(lbs)
 % Fuel System Weight
-    % Wfs = .25;
-
+% Wfs = .25;
 % Surface Controls Weight
-    Wsc=1.066*W^0.626;
-
+Wsc=1.066*W^0.626;
 % Avionics Weight (camera, servos, computer, GPS & Battery)
-    % Wau=1.62;
-
+% Wau=1.62;
 % Payload Weight
-    % Wpay=2;
-
+% Wpay=2;
 %% TOTAL WEIGHT
-    Wto(i)=Wstruct+Wp+Wfs+Wsc+Wpay+Wfuel;
-    W = Wto(i);
-
-    Ww_arr(i) = Ww;
-    Wf_arr(i) = Wf;
-    Wht_arr(i) = Wht;
-    Wvt_arr(i) = Wvt;
-    Wstruct_arr(i) = Wstruct;
-    Wp_arr(i) = Wp;
-    Wau_arr(i) = Wau;
+Wto(i)=Wstruct+Wp+Wfs+Wsc+Wpay+Wfuel;
+W = Wto(i);
+Ww_arr(i) = Ww;
+Wf_arr(i) = Wf;
+Wht_arr(i) = Wht;
+Wvt_arr(i) = Wvt;
+Wstruct_arr(i) = Wstruct;
+Wp_arr(i) = Wp;
+Wau_arr(i) = Wau;
 end
-
 % W at elbow!!
-index = 3;            % should choose x=4
+index = 3; % should choose x=4
 W_total = Wto(index);
+
+
+
+
+
+
+
 
 
 
@@ -578,6 +567,11 @@ Endurance_sec = (EF * (CL_endurance^1.5) / (c_p_base * CD_endurance)) ...
 
 % Convert to minutes
 Endurance_min = Endurance_sec / 60;
+
+disp(x_cg_dry)
+disp(x_cg_fhalf_pay)
+disp(x_cg_0 )
+
 
 %% ========================================================================
 % ) OUTPUT STORAGE
