@@ -94,7 +94,6 @@ inputs.Wbat        = 0.44;
 inputs.Wserv       = 0.06;           
 
 % Component CG Locations (wrt nose) [ft]
-inputs.x_wle       = 1.0;     % This overrides the old base value
 inputs.x_lgcg      = 2.0;     
 inputs.x_propcg    = -0.2;    
 inputs.x_cam       = 0.78;    
@@ -123,26 +122,24 @@ inputs.makePrint_tail_Volume = 0;
 % =====================================
 
 % Number of random aircraft designs to test
-nCases = 5000;
+nCases = 1;
 
 %% VARIABLE RANGES (EDIT THESE WHENEVER YOU WANT TO CHANGE DESIGN SPACE)
-L_fuse_min = 1.0;   % Actual base: 5.0
-L_fuse_max = 10.0;
 
-Arw_min = 1.4;      % Actual base: 7.4
-Arw_max = 12.4;
+%% VARIABLE RANGES (RUN 3 - The Best Data)
+L_fuse_min = 3.5127;   L_fuse_max = 4.2237;
+Arw_min    = 6.1724;   Arw_max    = 6.5324;
+Art_min    = 3.1008;   Art_max    = 4.7762;   % <-- Tightened from 3.0-5.0
+bw_min     = 4.6708;   bw_max     = 4.8925;   % <-- Fixed! Tightened from 1.5-10.5
+x_wle_min  = 1.0153;   x_wle_max  = 1.0707;   % <-- Tightened from 0.75-1.
 
-Art_min = 1.0;      % Actual base: 4.0
-Art_max = 10.0;
-
-bw_min = 1.5;       % Actual base: 5.617
-bw_max = 10.5;
 
 %% STORAGE ARRAYS
 L_fuse_vals = zeros(nCases,1);
 Arw_vals    = zeros(nCases,1);
 Art_vals    = zeros(nCases,1);
 bw_vals     = zeros(nCases,1);
+x_wle_vals  = zeros(nCases,1);
 
 Drag        = zeros(nCases,1);
 StallSpeed  = zeros(nCases,1);
@@ -164,17 +161,19 @@ min_ROC        = 40;   % must be ABOVE this
 
 for i = 1:nCases
     
-    % Randomly generate aircraft geometry
-    inputs.L_fuse = L_fuse_min + rand*(L_fuse_max - L_fuse_min);
-    inputs.Arw    = Arw_min    + rand*(Arw_max - Arw_min);
-    inputs.Art    = Art_min    + rand*(Art_max - Art_min);
-    inputs.bw     = bw_min     + rand*(bw_max - bw_min);
+    % HARDCODED IDEAL AIRCRAFT (Comment out the rand equations)
+    inputs.L_fuse = 3.6179;  %L_fuse_min + rand*(L_fuse_max - L_fuse_min);
+    inputs.Arw    =  6.3266 ;%Arw_min    + rand*(Arw_max - Arw_min);
+    inputs.Art    = 3.1022;  %Art_min    + rand*(Art_max - Art_min);
+    inputs.bw     = 4.6801 ;  %bw_min     + rand*(bw_max - bw_min);
+    inputs.x_wle  = 1.0312 ;  %x_wle_min  + rand*(x_wle_max - x_wle_min);
 
     % Store the generated design variables
     L_fuse_vals(i) = inputs.L_fuse;
     Arw_vals(i)    = inputs.Arw;
     Art_vals(i)    = inputs.Art;
     bw_vals(i)     = inputs.bw;
+    x_wle_vals(i)  = inputs.x_wle;
 
     % Run aircraft model
     outputs = computeAircraft(inputs);
@@ -218,12 +217,12 @@ end
 
 %% CREATE TABLE (DESIGN VARIABLES FIRST)
 ResultsTable = table( ...
-    L_fuse_vals, Arw_vals, Art_vals, bw_vals, SM_0, SM_dry, ...
+    L_fuse_vals, x_wle_vals, Arw_vals, Art_vals, bw_vals, SM_0, SM_dry, ...
     MaxSpeed, ROC_Stall, StallSpeed, Endurance_min, W_total, Result);
 
 % Assign the column headers in the exact same order
 ResultsTable.Properties.VariableNames = ...
-    {'L_fuse', 'Arw', 'Art', 'bw', 'SM_0', 'SM_dry', ...
+    {'L_fuse','x_wle', 'Arw', 'Art', 'bw', 'SM_0', 'SM_dry', ...
     'Max_Speed', 'ROC_Stall', 'Stall_Speed', 'Endurance_min', 'W_total', 'Result'};
 
 %% CREATE TIMESTAMP
