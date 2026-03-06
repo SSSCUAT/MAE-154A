@@ -131,11 +131,11 @@ L_fuse_max = 6;
 Arw_min = 6;      % Actual base: 7.4
 Arw_max = 10;
 
-Art_min = 3.4;      % Actual base: 4.0
-Art_max = 4.4;
+Art_min = 3;      % Actual base: 4.0
+Art_max = 5;
 
-bw_min = 5;       % Actual base: 5.617
-bw_max = 7;
+bw_min = ;       % Actual base: 5.617
+bw_max = 10.5;
 
 x_wle_min = 0.9;
 x_wle_max = 1.2;
