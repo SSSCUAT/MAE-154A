@@ -59,6 +59,7 @@ AR_vt    = inputs.AR_vt;
 V_vt     = inputs.V_vt;
 Sv       = inputs.Sv;
 bv       = inputs.bv;
+lambdatv = inputs.lambdatv;
 
 % Wing
 hac        = inputs.hac;
@@ -266,7 +267,10 @@ x_cg_noVT = sum(W_novt.*x_novt) / sum(W_novt); % cg without vertical tail
 l_vt = x_vac - x_cg_noVT; % distance from cg wihtout vt to ac of vt 
 S_vt = V_vt*((Sw*bw)/l_vt); % VERTICAL TAIL AREA
 b_vt = sqrt(AR_vt*S_vt);    % VERTICAL TAIL span
-c_vt = S_vt / b_vt;           % VERTICAL TAIL chord (NACA 0012)
+
+Crtv = (2*S_vt)/(b_vt*(1 + lambdatv));
+Cttv = lambdatv * Crtv;
+c_vt  = (2/3) * Crth * ((1 + lambdath + lambdath^2)/(1 + lambdath)); % VERTICAL TAIL MAC chord (NACA 0012)
 
 x_vle = x_vac - 0.25*c_vt;  % location of vertical tail leading edge wrt nose
 x_vcg = x_vle + 0.35*c_vt; % location of vertical tail cg

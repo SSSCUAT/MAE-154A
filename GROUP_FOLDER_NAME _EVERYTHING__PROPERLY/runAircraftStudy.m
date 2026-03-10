@@ -12,7 +12,11 @@ inputs.lambdaw = 0.40;
 
 % Horizontal tail geometry
 inputs.lambdath = 0.50;         
-inputs.Art      = 4.0;          
+inputs.Art      = 4.0;   
+
+% Vertical tail geometry
+inputs.lambdatv = 0.6;
+
 
 % Aerodynamic parameters
 inputs.e        = 0.85;         
