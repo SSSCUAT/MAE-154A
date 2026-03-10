@@ -54,6 +54,7 @@ c_ht = 0.38;
 
 AR_vt = 1.8;      % vertical tail aspect ratio (CONSTANT!!)
 V_vt = 0.04;      % volume coefficient vertical tail (CONSTANT!!)
+lambdatv = 0.6;   % vertical tail taper ratio
 % Temporary!!!
 Lv = 4*c;         % distance from AC of wing to AC of verticla tail
 
@@ -80,8 +81,8 @@ x_hcg = x_hle + 0.35*c_ht; % location of horizontal tail cg wrt nose
 x_vac = x_wac + Lv;         % location of vertical tail AC wrt nose
 
 x_fcg = 0.4*L_fuse; % CG of fuselage (estimated)
- x_lgcg = 2; % CG of landing gear (estimated)
- x_propcg = -0.2; % CG of propellar
+x_lgcg = 2; % CG of landing gear (estimated)
+x_propcg = -0.2; % CG of propellar
 
 %% Vertical Tail (contd)
 W_novt = [Ww, Wht, Wf, Wlg, Wprop];  % weight without vertical tail
@@ -93,7 +94,10 @@ x_cg_noVT = sum(W_novt.*x_novt) / sum(W_novt); % cg without vertical tail
 l_vt = x_vac - x_cg_noVT % distance from cg wihtout vt to ac of vt 
 S_vt = V_vt*((Sw*bw)/l_vt) % VERTICAL TAIL AREA
 b_vt = sqrt(AR_vt*S_vt)    % VERTICAL TAIL span
-c_vt = S_vt / b_vt           % VERTICAL TAIL chord (NACA 0012)
+
+Crtv = (2*S_vt)/(b_vt*(1 + lambdatv))
+Cttv = lambdatv * Crtv
+c_vt  = (2/3) * Crth * ((1 + lambdath + lambdath^2)/(1 + lambdath)) % VERTICAL TAIL MAC chord (NACA 0012)
 
 x_vle = x_vac - 0.25*c_vt;  % location of vertical tail leading edge wrt nose
 x_vcg = x_vle + 0.35*c_vt; % location of vertical tail cg
