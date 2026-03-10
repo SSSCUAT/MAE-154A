@@ -16,9 +16,9 @@ x_wle = 1.;
 
 %% Wing Parameters
 
-Arw = 6.2977;         % aspect ratio
-Sw = 3.5265; % wing area
-bw = 4.7134; % wing span (tip to tip)
+Arw = 6.3266;         % aspect ratio
+%Sw = 3.5265; % wing area
+bw = 4.6801; % wing span (tip to tip)
 %c = Sw/bw;          % chord length 
 c = 0.7940; 
 
@@ -156,3 +156,5 @@ x_cg_fquart_nopay = sum(W_fquart_nopay.*x_fquart_nopay)/sum(W_fquart_nopay)
 W_f_nopay = [Wdry, Wfuel]; % weight w/ no payload and all fuel
 x_f_nopay  = [x_dry, x_fuel];
 x_cg_f_nopay = sum(W_f_nopay.*x_f_nopay)/sum(W_f_nopay)
+
+Sw = bw^2/Arw;
