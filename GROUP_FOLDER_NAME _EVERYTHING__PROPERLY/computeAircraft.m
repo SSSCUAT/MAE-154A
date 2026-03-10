@@ -555,7 +555,7 @@ CD_endurance = CD_total(end_idx);
 
 % Convert c_p from [lb/(hp*hr)] to standard base units [1/ft]
 % 1 hp = 550 ft-lbf/s, 1 hour = 3600 seconds
-c_p_base = c_p_hp_hr / (550 * 3600);
+c_p_base = c_p_hp_hr / (550*3600);
 
 % Define Initial (Wi) and Final (Wf) weights in lbs
 Wi = W_total;
@@ -568,9 +568,9 @@ Endurance_sec = (EF * (CL_endurance^1.5) / (c_p_base * CD_endurance)) ...
 % Convert to minutes
 Endurance_min = Endurance_sec / 60;
 
-disp(x_cg_dry)
-disp(x_cg_fhalf_pay)
-disp(x_cg_0 )
+%disp(x_cg_dry)
+%disp(x_cg_fhalf_pay)
+%disp(x_cg_0 )
 
 
 %% ========================================================================
