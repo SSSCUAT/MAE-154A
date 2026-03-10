@@ -65,7 +65,7 @@ W_fuse = 8/12;          % [ft]
 H_fuse = 8/12;          % [ft]
 Swet_f = 2*(L_fuse*W_fuse + L_fuse*H_fuse + W_fuse*H_fuse); % [ft^2]
 d_fuse = W_fuse;        % [ft] equiv diameter for fineness ratio
-
+display(Sth)
 % ========================================================================
 % 2) PLANFORM GEOMETRY (ROOT/TIP/MAC)
 % ========================================================================
@@ -609,7 +609,22 @@ title('Local C_D Change with Elevator Deflection at Trim');
 
 
 
+% ========================================================================
+% POWER REQUIRED vs POWER AVAILABLE AT 6000 RPM
+% ========================================================================
+figure;
+plot(V, Power_required_hp, 'k', 'LineWidth', 2.5); hold on;
+plot(V, Pavail_6000, 'b--', 'LineWidth', 2.5);
 
+xline(55, '--r', 'Stall Speed (55 ft/s)', 'LineWidth', 1.5);
+xline(60, '--m', 'Max C_L^{3/2}/C_D (60 ft/s)', 'LineWidth', 1.5);
+xline(80, '--g', 'Max CL/CD (80 ft/s)', 'LineWidth', 1.5);
+
+grid on;
+xlabel('Velocity V [ft/s]');
+ylabel('Power [hp]');
+title('Power Required vs Power Available at 6000 RPM');
+legend('Power Required','Power Available (6000 RPM)','Location','best');
 
 
 
@@ -625,7 +640,7 @@ figure;
 plot(V, Dp, 'LineWidth', 2); hold on;
 plot(V, Di, 'LineWidth', 2);
 plot(V, D,  'LineWidth', 2);
-plot(V_LDmax, D(idx), 'ko', 'MarkerSize', 8, 'LineWidth', 2);
+plot(V_LDmax, D(idx), 'x', 'MarkerSize', 8, 'LineWidth', 2);
 grid on;
 xlabel('Velocity V [ft/s]'); ylabel('Drag [lb]');
 title('Parasite vs Induced vs Total Drag vs Velocity');
@@ -633,7 +648,7 @@ legend('Dp','Di','D','At (L/D)_{max}','Location','best');
 
 figure;
 plot(V, LD, 'LineWidth', 2); hold on;
-plot(V_LDmax, LDmax, 'ko', 'MarkerSize', 8, 'LineWidth', 2);
+plot(V_LDmax, LDmax, 'x', 'MarkerSize', 8, 'LineWidth', 2);
 grid on;
 xlabel('Velocity V [ft/s]'); ylabel('L/D [-]');
 title('L/D vs Velocity');
@@ -651,7 +666,7 @@ legend('L/D','(L/D)_{max}','Location','best');
 
 figure;
 plot(V, rad2deg(deltae), 'LineWidth', 2); hold on;
-plot(V_LDmax, deltae_LDmax_deg, 'ko', 'MarkerSize', 8, 'LineWidth', 2);
+plot(V_LDmax, deltae_LDmax_deg, 'x', 'MarkerSize', 8, 'LineWidth', 2);
 grid on;
 xlabel('Velocity V [ft/s]'); ylabel('\delta_e [deg]');
 title('Elevator Deflection vs Velocity (Trim from Cm=0)');
@@ -672,7 +687,7 @@ legend('\delta_e','At (L/D)_{max}','Location','best');
 % ========================================================================
 figure;
 plot(V, CL32_over_CD, 'LineWidth', 2); hold on;
-plot(V_endurance, CL32CD_max, 'ko', 'MarkerSize', 8, 'LineWidth', 2);
+plot(V_endurance, CL32CD_max, 'x', 'MarkerSize', 8, 'LineWidth', 2);
 grid on;
 xlabel('Velocity V [ft/s]');
 ylabel('C_L^{3/2}/C_D [-]');
