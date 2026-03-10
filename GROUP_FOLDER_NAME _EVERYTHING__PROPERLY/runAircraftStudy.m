@@ -82,7 +82,7 @@ inputs.Wlg         = 1.5;
 inputs.Wprop       = 0.24;
 inputs.Weng        = 1.76;
 inputs.Neng        = 1;       
-inputs.Wfuel       = 1.5;     
+inputs.Wfuel       = 0.5;   %Pounds  
 inputs.Wfs         = 0.25;
 inputs.Wau         = 1.62;
 inputs.Wbal        = 0.66;
@@ -104,7 +104,7 @@ inputs.x_serv      = 1.25;
 inputs.x_eng       = 0.25;    
 inputs.x_fs        = 1.25;    
 inputs.x_pay       = 1.25;    
-inputs.x_fuel      = 1.25;
+inputs.x_fuel      = 1.25
 % Endurance 
 inputs.c_p_hp_hr = 2.2;  % Specific fuel consumption [lb/(hp*hr)]
 
@@ -122,16 +122,16 @@ inputs.makePrint_tail_Volume = 0;
 % =====================================
 
 % Number of random aircraft designs to test
-nCases = 1;
+nCases = 10000;
 
 %% VARIABLE RANGES (EDIT THESE WHENEVER YOU WANT TO CHANGE DESIGN SPACE)
 
-%% VARIABLE RANGES (RUN 3 - The Best Data)
-L_fuse_min = 3.5127;   L_fuse_max = 4.2237;
-Arw_min    = 6.1724;   Arw_max    = 6.5324;
-Art_min    = 3.1008;   Art_max    = 4.7762;   % <-- Tightened from 3.0-5.0
-bw_min     = 4.6708;   bw_max     = 4.8925;   % <-- Fixed! Tightened from 1.5-10.5
-x_wle_min  = 1.0153;   x_wle_max  = 1.0707;   % <-- Tightened from 0.75-1.
+% (Extracted from 5-design set)
+L_fuse_min = 3.5187;   L_fuse_max = 3.6212;
+Arw_min    = 6.3898;   Arw_max    = 6.5140;
+Art_min    = 3.1548;   Art_max    = 3.4484;
+bw_min     = 4.5610;   bw_max     = 4.6906;
+x_wle_min  = 1.0540;   x_wle_max  = 1.0841;
 
 
 %% STORAGE ARRAYS
@@ -162,11 +162,11 @@ min_ROC        = 40;   % must be ABOVE this
 for i = 1:nCases
     
     % HARDCODED IDEAL AIRCRAFT (Comment out the rand equations)
-    inputs.L_fuse = 3.6179;  %L_fuse_min + rand*(L_fuse_max - L_fuse_min);
-    inputs.Arw    =  6.3266 ;%Arw_min    + rand*(Arw_max - Arw_min);
-    inputs.Art    = 3.1022;  %Art_min    + rand*(Art_max - Art_min);
-    inputs.bw     = 4.6801 ;  %bw_min     + rand*(bw_max - bw_min);
-    inputs.x_wle  = 1.0312 ;  %x_wle_min  + rand*(x_wle_max - x_wle_min);
+    inputs.L_fuse = L_fuse_min + rand*(L_fuse_max - L_fuse_min);
+    inputs.Arw    =  Arw_min    + rand*(Arw_max - Arw_min);
+    inputs.Art    = Art_min    + rand*(Art_max - Art_min);
+    inputs.bw     = bw_min     + rand*(bw_max - bw_min);
+    inputs.x_wle  =   x_wle_min  + rand*(x_wle_max - x_wle_min);
 
     % Store the generated design variables
     L_fuse_vals(i) = inputs.L_fuse;
