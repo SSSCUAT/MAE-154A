@@ -259,7 +259,7 @@ void initial_states(void) {
     cg_loc_x = 13.0;
     cg_loc_z = 1.0;
 
-    load_stl("Extra300170.stl", uav_model);
+    load_stl("Prototype3part.stl", uav_model);
 
     indata.open("simRecording_20260309_2221.txt");
     if (!indata) {
@@ -276,7 +276,7 @@ void display_and_dynamics(void) {
     draw_view();
     read_state();
     glutSwapBuffers();
-    Sleep(10);
+    Sleep(1);
     glutPostRedisplay();
 }
 
@@ -1111,9 +1111,10 @@ void draw_new_plane(void) {
     glRotatef(-90.0f, 1.0f, 0.0f, 0.0f);
     glRotatef(-90.0f, 0.0f, 1.0f, 0.0f);
     glRotatef(180.0f, 0.0f, 0.0f, 1.0f);
+    glRotatef(90.0f, 0.0f, 1.0f, 0.0f);  // Fix 90° rotation around Y-axis
 
-    // STL is in mm, sim is in feet  (~1 mm = 0.00328 ft, scale 0.1 gives nice size)
-    glScalef(0.1f, 0.1f, 0.1f);
+    // STL is in mm, sim is in feet  (~1 mm = 0.00328 ft, scale 0.05 gives smaller size)
+    glScalef(0.05f, 0.05f, 0.05f);
 
     if (wireframe_mode == 2) {
         // Wireframe only mode
