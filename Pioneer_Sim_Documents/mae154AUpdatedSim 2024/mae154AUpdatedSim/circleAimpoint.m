@@ -1,6 +1,3 @@
-154 lines
-•
-Formatting may be inconsistent from source
 function out = circleAimpoint(in)
 % ============================================================
 % Waypoint guidance and target intercept using Proportional Navigation (PN)
